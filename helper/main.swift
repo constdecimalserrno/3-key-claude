@@ -98,11 +98,13 @@ func pressed(_ key: Key) {
 }
 
 // in-process, so the one-time Automation prompt asks about UwU Helper
-// ponytail: runs on the main thread, a hung terminal app freezes every key until AppleScript gives up ( 2 minutes )
+// 2 seconds per Apple event instead of AppleScript's usual 2 minutes, a healthy terminal app answers WAY faster
+// ponytail: runs on the main thread, so a hung terminal app still freezes every key, just for those 2 seconds a press,
+// and the press that pops a one-time Automation prompt gives up before you click Allow, so you press again
 @discardableResult
 func applescript(_ source: String) -> String? {
     var error: NSDictionary?
-    guard let script = NSAppleScript(source: source) else { return nil }
+    guard let script = NSAppleScript(source: "with timeout of 2 seconds\n\(source)\nend timeout") else { return nil }
     let result = script.executeAndReturnError(&error)
     if let error { log("AppleScript failed: \(error[NSAppleScript.errorMessage] ?? error)"); return nil }
     return result.stringValue
