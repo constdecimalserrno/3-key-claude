@@ -35,13 +35,40 @@ The Helper types for you, and macOS ( rightfully ) wants your yes first.
 
 That's it, no restart needed.
 
-The first time an Action talks to another app ( like the default one that opens iterm2 ), macOS asks if UwU Helper may control it. Click Allow.
+The first time the Cycle key or an Action talks to another app ( like iterm2 ), macOS asks if UwU Helper may control it. Click Allow.
 
 ### Re-grant after EVERY reinstall
 
 The Helper is ad-hoc signed, so every build is a brand new app as far as macOS is concerned, and macOS forgets it ever trusted it. The installer wipes the stale grants for you, so after each `./install.sh` you just flip the UwU Helper switch under Accessibility again ( and click Allow again on the next Automation prompt ). If a key stops working right after an update, it's this. Every time.
 
 If the installer said it couldn't reset the old grants, select UwU Helper in the Accessibility list, remove it with the - button, then add it back with + ( it lives in `~/Applications` ).
+
+### Cycle key
+
+Every press of the Cycle key ( wootility sends F13 ) moves keyboard focus to the next Session, so you press it and just start typing there. A Session is one running terminal in iterm2, and every split pane counts as its own Session.
+
+The Cycle goes window by window, then tab by tab, then pane by pane, and after the last Session it wraps back to the first. That order is FIXED, it doesn't reshuffle as focus moves, so 5 presses visit 5 different Sessions and your fingers learn the way. Muscle memory.
+
+Good to know:
+
+- Minimized windows and iterm2's hotkey window are skipped, so the Cycle never pops a window you put away.
+- In any other app ( say your browser ), the first press takes you back to the terminal app you were in last, and from there it cycles as usual.
+- No Sessions open, or iterm2 isn't even running? Then it does nothing. The Helper NEVER launches iterm2 just to ask what's open.
+- The Cycle key doesn't need Accessibility, only the one Automation yes below.
+
+Sessions on other Spaces and in full-screen windows are in the Cycle too, but macOS only takes you over there with this one switched on:
+
+1. Open System Settings > Desktop & Dock.
+2. Scroll down to Mission Control.
+3. Turn on "When switching to an application, switch to a Space with open windows for the application".
+
+Without it, the Cycle can land you on a Session you can't see.
+
+The first press also asks for one more permission: macOS wants to know if UwU Helper may control iterm2 ( that's how it reads your Sessions and focuses the next one ). Click Allow, it's a one-time thing ( well, once per reinstall, same deal as Accessibility ). Clicked Don't Allow by accident, or the log says something about not being authorized to send Apple events? Flip it back on:
+
+1. Open System Settings > Privacy & Security > Automation.
+2. Expand UwU Helper.
+3. Turn on the switch next to iterm2.
 
 ### Action keys
 
