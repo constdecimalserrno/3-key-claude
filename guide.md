@@ -45,16 +45,16 @@ If the installer said it couldn't reset the old grants, select UwU Helper in the
 
 ### Cycle key
 
-Every press of the Cycle key ( wootility sends F13 ) moves keyboard focus to the next Session, so you press it and just start typing there. A Session is one running terminal in iterm2, and every split pane counts as its own Session.
+Every press of the Cycle key ( wootility sends F13 ) moves keyboard focus to the next Session, so you press it and just start typing there. A Session is one running terminal in iterm2 or ghostty, and every split pane counts as its own Session.
 
-The Cycle goes window by window, then tab by tab, then pane by pane, and after the last Session it wraps back to the first. That order is FIXED, it doesn't reshuffle as focus moves, so 5 presses visit 5 different Sessions and your fingers learn the way. Muscle memory.
+The Cycle goes through iterm2 first, then ghostty, window by window, then tab by tab, then pane by pane, and after the last Session it wraps back to the first. That order is FIXED, it doesn't reshuffle as focus moves, so 5 presses visit 5 different Sessions and your fingers learn the way. Muscle memory.
 
 Good to know:
 
-- Minimized windows and iterm2's hotkey window are skipped, so the Cycle never pops a window you put away.
+- Minimized windows and iterm2's hotkey window are skipped, so the Cycle never pops a window you put away ( ghostty is a bit different, see below ).
 - In any other app ( say your browser ), the first press takes you back to the terminal app you were in last, and from there it cycles as usual.
-- No Sessions open, or iterm2 isn't even running? Then it does nothing. The Helper NEVER launches iterm2 just to ask what's open.
-- The Cycle key doesn't need Accessibility, only the one Automation yes below.
+- No Sessions open, or no terminal app even running? Then it does nothing. The Helper NEVER launches iterm2 or ghostty just to ask what's open.
+- The Cycle key doesn't need Accessibility, only the Automation yes below ( one per terminal app ).
 
 Sessions on other Spaces and in full-screen windows are in the Cycle too, but macOS only takes you over there with this one switched on:
 
@@ -64,11 +64,25 @@ Sessions on other Spaces and in full-screen windows are in the Cycle too, but ma
 
 Without it, the Cycle can land you on a Session you can't see.
 
-The first press also asks for one more permission: macOS wants to know if UwU Helper may control iterm2 ( that's how it reads your Sessions and focuses the next one ). Click Allow, it's a one-time thing ( well, once per reinstall, same deal as Accessibility ). Clicked Don't Allow by accident, or the log says something about not being authorized to send Apple events? Flip it back on:
+The first press also asks for one more permission: macOS wants to know if UwU Helper may control iterm2 ( that's how it reads your Sessions and focuses the next one ). Click Allow, it's a one-time thing ( well, once per reinstall, same deal as Accessibility ). The Helper only waits 2 seconds for a terminal app to answer, so a stuck one can't freeze your keys, which also means the press that brought up the prompt probably did nothing. Just press again after Allow. Clicked Don't Allow by accident, or the log says something about not being authorized to send Apple events? Flip it back on:
 
 1. Open System Settings > Privacy & Security > Automation.
 2. Expand UwU Helper.
-3. Turn on the switch next to iterm2.
+3. Turn on the switch next to iterm2 ( or ghostty ).
+
+### ghostty
+
+Got ghostty? Its Sessions join the Cycle right after iterm2's, so one Cycle key walks through both apps and wraps around. Only one of the two running is fine too.
+
+1. You need ghostty 1.3 or newer, that's the first one that speaks AppleScript ( Ghostty > About Ghostty tells you ).
+2. The first press with ghostty open asks if UwU Helper may control ghostty, the same one-time Automation prompt as for iterm2. Click Allow, then press again.
+3. ghostty's AppleScript must stay on. It's on by default, so you only need to care if your ghostty config has this line, delete it ( or make it `true` ) and restart ghostty:
+
+   ```ini
+   macos-applescript = false
+   ```
+
+Good to know: ghostty's quick terminal is never in the Cycle, but a minimized ghostty window IS, because ghostty doesn't tell scripts which windows are minimized, so the Cycle pops it right back up. Sorry. Also, ghostty still calls its AppleScript a preview, so a future ghostty might break this ( like everything here, this will all likely change in 3-6 months ).
 
 ### Action keys
 
