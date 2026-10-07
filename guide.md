@@ -27,8 +27,8 @@ Good to know:
 ### Import the share code
 
 1. Open [wootility](https://wooting.io/wootility) and plug in the UwU.
-2. Go to My Profiles > Import Profile, paste this share code and click Import: `XXXX-share-code-coming-soon`
-3. The profile now lives in wootility, not on the UwU yet. Use Copy to Onboard ( or Move to Onboard ) on it and pick the first slot.
+2. Go to My Profiles > Import Profile, paste this share code and click Import: `8ee6080d758ae0da37a7f8b6c9604399d265`
+3. The profile now lives in wootility, not on the UwU yet. Drag it into the Onboard profiles section, first slot ( its menu may also offer Move to Onboard ).
 4. Open any text editor and press the Enter key, you get a new line. The other keys seem to do nothing yet, that's right, keep going.
 
 There's no one-click import link, GitHub strips the custom link scheme wootility's desktop app uses, so copy-paste it is.
@@ -38,9 +38,10 @@ There's no one-click import link, GitHub strips the custom link scheme wootility
 Share code not working ( wootility changes, codes go stale )? Same thing by hand, in wootility, on the UwU's first onboard profile:
 
 1. Open the Remap tab.
-2. For every key in the table above, select it and give it what it should send. Drag it over from wootility's keyboard, or use "Press any key to bind", but most Mac keyboards have no Right Ctrl or F13 to press, so dragging it is.
-3. Open the Performance tab, select the 3 top keys and move the Actuation Point slider to about 2.0mm.
-4. With those 3 still selected, switch Enable Rapid Trigger off.
+2. For every key in the table above, find what it should send in the list on the right ( the "Search for a character" box helps, Right Ctrl shows up as `^ Ctrl`, the second one ) and drag it onto the key. Clicking a key gives you "Press any key to bind" too, but most Mac keyboards have no Right Ctrl or F13 to press, so dragging it is.
+3. Open the Actuation Point tab, click Select all keys ( only the 3 top keys are analog, so that's them ) and type 2.00 into the mm box.
+4. Open the Rapid Trigger tab and, with those 3 still selected, switch Enable Rapid Trigger off.
+5. Click Save to Keyboard, top right. NOTHING reaches the UwU until you do.
 
 ### The dictation hotkey
 

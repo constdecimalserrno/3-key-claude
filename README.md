@@ -23,8 +23,8 @@ The Talk key and the Enter key need NO software, the mapping lives on the UwU it
 
 ### Tier 1: no software
 
-1. Open wootility, go to My Profiles > Import Profile, paste `XXXX-share-code-coming-soon` and click Import.
-2. Copy it to the UwU's first onboard slot ( Copy to Onboard ).
+1. Open wootility, go to My Profiles > Import Profile, paste `8ee6080d758ae0da37a7f8b6c9604399d265` and click Import.
+2. It lands under your inactive profiles, drag it into the Onboard profiles section, first slot.
 3. In your dictation app's settings ( I use wispr flow ), add the Talk key as an extra push-to-talk shortcut, it shows up as Right Ctrl. Keep fn.
 4. Hold the Talk key and talk. That's it!
 
