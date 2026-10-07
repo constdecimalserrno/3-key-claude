@@ -1,0 +1,5 @@
+[
+  {"run": "osascript -e 'tell application \"iTerm\" to create window with default profile' -e 'tell application \"iTerm\" to activate'"},
+  {"type": "yes"},
+  {"type": "no"}
+]
