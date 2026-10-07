@@ -2,7 +2,57 @@
 
 Everything you need to take an UwU and a Mac from zero to working, top to bottom.
 
-Part 1 ( mapping the UwU, the Talk key and the Enter key ) is coming soon.
+Part 1 maps the UwU and hooks up your dictation app, nothing gets installed on the Mac, and you walk away with a working Talk key and Enter key. Part 2 adds the Helper for the Cycle key and the Action keys. Do them in order and stop wherever you're happy.
+
+## Part 1: the UwU
+
+### The key table
+
+Out of the box the UwU types Z / X / C on top and Esc / Space / Fn below. Here's what it sends instead:
+
+| Key | wootility sends | What it does |
+|---|---|---|
+| Talk key ( top-left ) | Right Ctrl | push-to-talk for your dictation app, hold to talk, double-tap for hands-free |
+| Cycle key ( top-middle ) | F13 | moves keyboard focus to the next Session, needs the Helper ( part 2 ) |
+| Enter key ( top-right ) | Return | a plain Return to whatever has focus |
+| Action keys ( bottom, left to right ) | F16 / F17 / F18 | one Action each, needs the Helper ( part 2 ) |
+
+Good to know:
+
+- The 3 top keys only fire at about 2.0mm with Rapid Trigger OFF, so resting a finger on them does nothing. No accidental Enter, no dictation cut short.
+- It's all ONE profile in the UwU's first onboard slot ( P1 ), stored on the UwU itself, so it works without wootility open and on any Mac you plug it into.
+- F14 and F15 are skipped on purpose, macOS may treat them as display brightness.
+- The bottom-right button is normally wootility's Fn key, so remapping it gives up the Fn layers. Fair trade.
+
+### Import the share code
+
+1. Open [wootility](https://wooting.io/wootility) and plug in the UwU.
+2. Go to My Profiles > Import Profile, paste this share code and click Import: `XXXX-share-code-coming-soon`
+3. The profile now lives in wootility, not on the UwU yet. Use Copy to Onboard ( or Move to Onboard ) on it and pick the first slot.
+4. Open any text editor and press the Enter key, you get a new line. The other keys seem to do nothing yet, that's right, keep going.
+
+There's no one-click import link, GitHub strips the custom link scheme wootility's desktop app uses, so copy-paste it is.
+
+### Or map it by hand
+
+Share code not working ( wootility changes, codes go stale )? Same thing by hand, in wootility, on the UwU's first onboard profile:
+
+1. Open the Remap tab.
+2. For every key in the table above, select it and give it what it should send. Drag it over from wootility's keyboard, or use "Press any key to bind", but most Mac keyboards have no Right Ctrl or F13 to press, so dragging it is.
+3. Open the Performance tab, select the 3 top keys and move the Actuation Point slider to about 2.0mm.
+4. With those 3 still selected, switch Enable Rapid Trigger off.
+
+### The dictation hotkey
+
+I use wispr flow, but any dictation app that takes Right Ctrl as a hotkey works the same way.
+
+1. Open wispr flow's settings and find the push-to-talk shortcut.
+2. ADD the Talk key as an extra shortcut ( press it when wispr flow asks, it shows up as Right Ctrl ). Keep fn, the UwU adds a hotkey, it doesn't replace one.
+3. Hold the Talk key and talk, let go and the text lands wherever your cursor is. Double-tap it for hands-free.
+
+wispr flow won't take Right Ctrl on its own? Use Right Option instead, in BOTH places: give the Talk key Right Option in wootility's Remap tab, then add it in wispr flow.
+
+That's the Talk key and the Enter key done, with nothing installed on the Mac. The Cycle key and the Action keys send keys macOS ignores out of the box, so they stay quiet until part 2.
 
 ## Part 2: the Helper
 
