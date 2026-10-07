@@ -56,6 +56,37 @@ let scripts: [String: (list: String, focus: (String) -> String)] = [
             end repeat
         end tell
         """ }),
+    // ghostty 1.3+ has windows, tabs and terminals, but no minimized or quick terminal property:
+    // its quick terminal is a panel, and panels never show up in `windows`, so it stays out of the Cycle all by itself
+    // ponytail: minimized windows DO show up and nothing says they're minimized, so the Cycle visits them and pops them back up
+    "com.mitchellh.ghostty": (list: """
+        set sep to character id 9
+        tell application id "com.mitchellh.ghostty"
+            set out to ""
+            repeat with w in windows
+                set wid to id of w
+                repeat with t in tabs of w
+                    set ti to index of t
+                    set pane to 0
+                    repeat with s in terminals of t
+                        set pane to pane + 1
+                        set out to out & "session" & sep & wid & sep & ti & sep & pane & sep & (id of s) & sep & linefeed
+                    end repeat
+                end repeat
+            end repeat
+            try
+                set out to out & "current" & sep & (id of focused terminal of selected tab of front window) & linefeed
+            end try
+            return out
+        end tell
+        """,
+        // focus picks the terminal's split, its tab AND its window in one go, activate does the rest
+        focus: { id in """
+        tell application id "com.mitchellh.ghostty"
+            focus terminal id \(quoted(id))
+            activate
+        end tell
+        """ }),
 ]
 
 // the last terminal app you were in, so the Cycle key can take you back there from your browser
