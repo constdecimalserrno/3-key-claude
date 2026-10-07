@@ -71,9 +71,11 @@ enum Tests {
         func session(_ window: String, _ tab: Int, _ pane: Int, _ id: String, _ flags: String = "") -> String {
             ["session", window, "\(tab)", "\(pane)", id, flags].joined(separator: "\t")
         }
+        func listing(_ lines: [String], current: String? = nil) -> String {
+            (lines + (current.map { ["current\t\($0)"] } ?? [])).joined(separator: "\n")
+        }
         func cycle(_ lines: [String], current: String? = nil, frontmost: String? = iterm, last: String? = nil) -> Effect {
-            let listing = (lines + (current.map { ["current\t\($0)"] } ?? [])).joined(separator: "\n")
-            return decide(.cycle, World(listings: [iterm: listing], frontmost: frontmost, lastTerminal: last))
+            decide(.cycle, World(listings: [iterm: listing(lines, current: current)], frontmost: frontmost, lastTerminal: last))
         }
 
         // front to back, the way iterm2 lists windows: 30 is in front, A B C D E is the Cycle
@@ -119,6 +121,48 @@ enum Tests {
         expect("only skipped Sessions", cycle(Array(skipped.prefix(3)), current: "H"), nothing)
         expect("iterm2 not running", decide(.cycle, World(frontmost: safari, lastTerminal: iterm)), nothing)
         expect("junk listing", cycle(["execution error: not authorized", "session\t1\tx\t1\tA\t"]), nothing)
+
+        // ghostty: text window ids, no flags ever, and its Sessions come after iterm2's
+        let ghostty = "com.mitchellh.ghostty"
+        func ghost(_ id: String) -> Effect { .focus(app: ghostty, session: id) }
+        // front to back again, a tab group with a split in tab 1, plus a lone window: G1 G2 G3 G4 is the Cycle
+        let ghosts = [
+            session("window-6000037b2c80", 1, 1, "G4"),
+            session("tab-group-600003a1e540", 2, 1, "G3"),
+            session("tab-group-600003a1e540", 1, 2, "G2"),
+            session("tab-group-600003a1e540", 1, 1, "G1"),
+        ]
+        func both(frontmost: String?, last: String? = nil, itermCurrent: String? = "C", ghosttyCurrent: String? = "G3") -> Effect {
+            decide(.cycle, World(listings: [iterm: listing(windows, current: itermCurrent), ghostty: listing(ghosts, current: ghosttyCurrent)],
+                                 frontmost: frontmost, lastTerminal: last))
+        }
+
+        // only ghostty running
+        for (order, lines) in [("front to back", ghosts), ("reshuffled", ghosts.reversed())] {
+            for (from, to) in [("G1", "G2"), ("G2", "G3"), ("G3", "G4"), ("G4", "G1")] {
+                expect("only ghostty, \(order): \(from) to \(to)",
+                       decide(.cycle, World(listings: [ghostty: listing(lines, current: from)], frontmost: ghostty)), ghost(to))
+            }
+        }
+        expect("only ghostty, from a browser, first ghostty Session",
+               decide(.cycle, World(listings: [ghostty: listing(ghosts, current: "G3")], frontmost: safari)), ghost("G1"))
+
+        // both, and ONLY the frontmost app's current Session counts
+        expect("both, in iterm2: C to D", both(frontmost: iterm), focus("D"))
+        expect("both, in iterm2: last iterm2 Session E on to ghostty G1", both(frontmost: iterm, itermCurrent: "E"), ghost("G1"))
+        expect("both, in ghostty: G3 to G4", both(frontmost: ghostty), ghost("G4"))
+        expect("both, in ghostty: wraps from G4 back to iterm2 A", both(frontmost: ghostty, ghosttyCurrent: "G4"), focus("A"))
+        expect("both, in ghostty with no current Session, first Session", both(frontmost: ghostty, ghosttyCurrent: nil), focus("A"))
+
+        // from a non-terminal app
+        expect("both, from a browser, back to ghostty", both(frontmost: safari, last: ghostty), .activate(ghostty))
+        expect("both, from a browser, back to iterm2", both(frontmost: safari, last: iterm), .activate(iterm))
+        expect("ghostty was last but has no Sessions now ( say only its quick terminal ), first iterm2 Session",
+               decide(.cycle, World(listings: [iterm: listing(windows), ghostty: ""], frontmost: safari, lastTerminal: ghostty)), focus("A"))
+        expect("ghostty frontmost with no Sessions, first iterm2 Session",
+               decide(.cycle, World(listings: [iterm: listing(windows, current: "C"), ghostty: ""], frontmost: ghostty)), focus("A"))
+        expect("both running, no Sessions anywhere",
+               decide(.cycle, World(listings: [iterm: "", ghostty: ""], frontmost: safari, lastTerminal: ghostty)), nothing)
 
         print(failed == 0 ? "all good" : "\(failed) FAILED")
         exit(failed == 0 ? 0 : 1)

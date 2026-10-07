@@ -3,7 +3,7 @@
 import Foundation
 
 // the supported terminal apps by bundle id, in Cycle order
-let terminals = ["com.googlecode.iterm2"]
+let terminals = ["com.googlecode.iterm2", "com.mitchellh.ghostty"]
 
 enum Key: Equatable, CustomStringConvertible {
     case cycle
@@ -58,7 +58,8 @@ func decide(_ key: Key, _ world: World) -> Effect {
 // A listing is one line per Session plus one for the app's current Session, fields split by a tab:
 //   session <window id> <tab index> <pane> <session id> <flags>
 //   current <session id>
-// flags are words, "minimized" or "dropdown" ( iterm2's hotkey window ) keep the Session out of the Cycle.
+// flags are words, "minimized" or "dropdown" ( iterm2's hotkey window ) keep the Session out of the Cycle,
+// ghostty never has any ( main.swift says why ).
 // Lines that look like anything else are ignored.
 func cycle(_ world: World) -> Effect {
     var sessions: [(app: String, id: String)] = []
@@ -74,7 +75,7 @@ func cycle(_ world: World) -> Effect {
             }
         }
         // by window id, NEVER the listing order: AppleScript lists windows front to back, and that reshuffles on every focus
-        // .numeric puts integer ids in number order ( 9 before 10 ) and still gives text ids a fixed one
+        // .numeric puts integer ids in number order ( 9 before 10 ) and still gives text ids ( ghostty's ) a fixed one
         mine.sort { a, b in
             a.window != b.window ? a.window.compare(b.window, options: .numeric) == .orderedAscending : (a.tab, a.pane) < (b.tab, b.pane)
         }
