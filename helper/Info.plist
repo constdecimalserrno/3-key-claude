@@ -19,6 +19,6 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>Some of your Actions ( like the one that opens a new iterm2 window ) talk to other apps.</string>
+	<string>The Cycle key asks iterm2 for its Sessions and focuses the next one, and some of your Actions ( like the one that opens a new iterm2 window ) talk to other apps too.</string>
 </dict>
 </plist>
