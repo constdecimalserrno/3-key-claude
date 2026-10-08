@@ -2,7 +2,7 @@
 
 ### Issue tracker
 
-Issues tracked in GitHub Issues (constdecimalserrno/three-button-workflow) via `gh` CLI. See `docs/agents/issue-tracker.md`.
+Issues tracked in GitHub Issues (constdecimalserrno/three-key-workflow) via `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
