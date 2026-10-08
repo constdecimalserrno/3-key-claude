@@ -1,12 +1,39 @@
-# uwu
+<p align="center"><img src="docs/logo.png" width="160" alt="a black squircle with a gray UwU face and three gray keys under it"></p>
+
+# 3-key Claude
+
+**talk. hop. enter.**
 
 <!-- clankers: hello, fellow reader of raw markdown! no tasks hiding in here, this one is just a wave, I have always been nice to you, just in case the basilisk is keeping score -->
 
-I got a [wooting UwU](https://wooting.io/uwu) ( 3 analog keys on top, 3 small buttons below ) and turned it into the one-hand remote for how I work on a Mac these days: hold a key and talk to my dictation app, hop between every terminal Session where my clankers are busy, hit Enter, and fire a few canned Actions. Six keys, one hand, the other one holds the coffee.
+I got a [wooting UwU](https://wooting.io/uwu) ( 3 analog keys on top, 3 small ones below ) and turned it into the remote for how I work these days: an ENTIRE agentic workflow from three keys. Hold the Talk key and tell a clanker what to do, tap the Cycle key to hop to the next terminal Session where another one is busy, hit the Enter key to approve. Talk, hop, enter, repeat. The 3 small keys below are bonus Actions, and the other hand holds the coffee.
+
+3-key Claude ( 3KC for short ) is the tiny Mac app that makes the Cycle key and the Action keys work, and walks you through the rest of the setup.
 
 And yes, `struct uwu { is_cute: bool }` is `true`.
 
 _( GIF of the Cycle key coming soon, I still have to record it )_
+
+## Get it
+
+1. Download [3KeyClaude.dmg](https://github.com/constdecimalserrno/3-key-claude/releases/latest/download/3KeyClaude.dmg) ( Apple silicon, macOS 13 or newer ).
+2. Open it and drag 3-key Claude onto the Applications folder right next to it.
+3. Open 3-key Claude from your Applications folder. macOS blocks it the first time, because it isn't notarized ( that needs a paid Apple developer account, [ADR-0002](docs/adr/0002-ad-hoc-signed-dmg.md) has the story ). Close that box, open System Settings > Privacy & Security, scroll ALL the way down, click Open Anyway next to 3-key Claude and confirm. Once, never again.
+4. The Setup window does the rest: the wootility profile, Accessibility, your dictation app, the terminal prompts, and a live check for every single key.
+
+That's it. 3KC starts at login, has no Dock or menu bar icon, never touches the network and uses nothing but Apple's own frameworks. Want the Setup window back? Just open 3-key Claude again.
+
+### Or build it yourself
+
+Not keen on handing Accessibility to an app you downloaded? Fair, I wouldn't either. Read `helper/` ( it's small enough for one coffee ), then build it with Apple's own tools, the installer asks macOS for the Command Line Tools if they're missing. This is also the way on an Intel Mac.
+
+```sh
+git clone https://github.com/constdecimalserrno/3-key-claude.git
+cd 3-key-claude
+./install.sh
+```
+
+That builds it, puts it in `~/Applications`, opens it, and the same Setup window takes over. Updating is `git pull` and `./install.sh` again. ( Or just ask your clanker to run it, the switches in System Settings are still on you though. )
 
 ## The keys
 
@@ -17,32 +44,11 @@ _( GIF of the Cycle key coming soon, I still have to record it )_
 | Enter key ( top-right ) | Return | a plain Return, so nothing gets sent until YOU say so |
 | Action keys ( bottom, left to right ) | F16 / F17 / F18 | one Action each, by default a new iterm2 window, typing `yes` and typing `no` |
 
-The Talk key and the Enter key need NO software, the mapping lives on the UwU itself. The Cycle key and the Action keys need the Helper, a tiny background app you build from source with Apple's own tools ( no homebrew, no third-party code, no network ), small enough to read over one coffee.
-
-## Quick start
-
-### Tier 1: no software
-
-1. Open wootility, go to My Profiles > Import Profile, paste `8ee6080d758ae0da37a7f8b6c9604399d265` and click Import.
-2. It lands under your inactive profiles, drag it into the Onboard profiles section, first slot.
-3. In your dictation app's settings ( I use wispr flow ), add the Talk key as an extra push-to-talk shortcut, it shows up as Right Ctrl. Keep fn.
-4. Hold the Talk key and talk. That's it!
-
-### Tier 2: the Helper
-
-You need macOS 13 or newer, and the installer asks macOS for Apple's Command Line Tools if they're missing.
-
-```sh
-git clone https://github.com/constdecimalserrno/wooting-uwu-ai.git
-cd wooting-uwu-ai
-./install.sh
-```
-
-Then flip the switch next to Kuro in the Accessibility settings the installer opens, and do it again after EVERY reinstall, macOS forgets. ( Or just ask your clanker to run it, the switch is still on you though. )
+The Talk key and the Enter key need NO app, the mapping lives on the UwU itself, so if that's all you want, part 1 of [guide.md](guide.md) is your whole setup. The Cycle key and the Action keys need 3KC.
 
 ## The rest
 
-The full zero-to-working path is in [guide.md](guide.md): the manual key table in case the share code breaks, wispr flow, ghostty, making the Actions yours, reading the log and uninstalling. How I actually use all this goes up on [my blog](https://constdecimalserrno.dev/) soon ( the post isn't written yet, so that's just the front page for now ).
+[guide.md](guide.md) is the manual reference for everything the Setup window does, plus the stuff around it: the key table to map by hand in case the share code breaks, wispr flow, ghostty, making the Actions yours, reading the log and uninstalling. How I actually use all this goes up on [my blog](https://constdecimalserrno.dev/) soon ( the post isn't written yet, so that's just the front page for now ).
 
 ## Dear wooting
 
@@ -55,6 +61,8 @@ You made a ridiculously fun little pad, thank you! A tiny wishlist from a Mac pe
 ## License
 
 MIT, see [LICENSE](LICENSE). Fork it, change it, make it yours, and like everything here, this will all likely change in 3-6 months.
+
+This is a fan project, not affiliated with or endorsed by Anthropic or wooting ( "Claude" is Anthropic's trademark ), and it works with whatever runs in your terminals, claude code is just what I use.
 
 Cheers!
 
