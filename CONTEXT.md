@@ -22,6 +22,10 @@ _Avoid_: confirm key, approve key, return key
 One of the UwU's three small bottom keys, each bound to exactly one Action.
 _Avoid_: macro key, snippet key, bottom button
 
+**Three-key workflow**:
+The agentic loop run from the UwU's 3 top keys: Talk ( tell a clanker what to do ), Cycle ( hop to the next one ), Enter ( approve ).
+_Avoid_: three-button workflow, three-key flow, 3-button loop
+
 ### Cycling
 
 **Session**:
@@ -35,8 +39,12 @@ _Avoid_: switcher, rotation, MRU
 ### Helper
 
 **Helper**:
-The optional background app on the Mac that powers the Cycle key and Action keys; the Talk key and Enter key work without it. The app itself is called Kuro.
-_Avoid_: daemon, agent, service, UwU Helper
+The optional background app on the Mac that powers the Cycle key and Action keys; the Talk key and Enter key work without it. The app itself is called 3-key Claude ( 3KC for short ).
+_Avoid_: daemon, agent, service, UwU Helper, Kuro, Three-Button Workflow, Three-Key Workflow
+
+**Setup window**:
+The Helper's one-time window that walks you through the whole setup, one step per page, with a live check for every key; it opens on first launch and whenever the app is opened while already running.
+_Avoid_: onboarding, wizard, welcome screen
 
 ### Actions
 
