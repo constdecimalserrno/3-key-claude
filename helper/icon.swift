@@ -1,5 +1,5 @@
 // 3-key Claude's app icon: a black squircle, a gray UwU face and the pad's three keys under it, drawn from vectors at every size.
-// usage: swift helper/icon.swift <out-dir> [logo.png]  ( writes <out-dir>/AppIcon.iconset, plus a 512px logo if given a path )
+// usage: swift helper/icon.swift <out-dir> [logo.png]  ( writes <out-dir>/AppIcon.iconset and the .dmg background, plus a 512px logo if given a path )
 import AppKit
 
 let black = CGColor(gray: 0, alpha: 1)
@@ -9,7 +9,7 @@ let skirt = CGColor(srgbRed: 0.37, green: 0.37, blue: 0.37, alpha: 1) // #5E5E5E
 // everything sits on Apple's 1024 grid, y up from the center
 // the face: its radius and height, then the features from the face's center ( mouthX is where each bowl of the w sits, a bit under its radius so the middle point dips )
 typealias Face = (r: CGFloat, y: CGFloat, eyeX: CGFloat, eyeHalf: CGFloat, eyeTop: CGFloat, eyeBowl: CGFloat, mouthX: CGFloat, mouth: CGFloat, mouthY: CGFloat, line: CGFloat)
-// the three keys ( talk, hop, enter ): one key's size, the gap between them, the row's top edge, the corner radius,
+// the three keys ( talk, hop, confirm ): one key's size, the gap between them, the row's top edge, the corner radius,
 // then how much of the keycap's side and front shows around its top ( 0 for a flat key )
 typealias Keys = (w: CGFloat, h: CGFloat, gap: CGFloat, top: CGFloat, round: CGFloat, rim: CGFloat, lip: CGFloat)
 typealias Look = (face: Face, keys: Keys?)
@@ -98,6 +98,52 @@ func render(_ s: Int) -> Data {
     return NSBitmapImageRep(cgImage: ctx.makeImage()!).representation(using: .png, properties: [:])!
 }
 
+// the .dmg window's background, 640 x 400 points with y down from the top, the way Finder places icons
+// true black like the icon, a gray hop from the app to Applications, and the one thing to do
+// the app sits at ( 160, 185 ) and Applications at ( 480, 185 ), the same spots install.sh hands Finder
+// ponytail: Finder draws its icon labels black over a background picture ( in dark mode too ), so on true black they vanish,
+// the face, the folder and the hint line say it all
+func background(_ scale: CGFloat) -> Data {
+    let size = CGSize(width: 640, height: 400)
+    let ctx = CGContext(data: nil, width: Int(size.width * scale), height: Int(size.height * scale), bitsPerComponent: 8, bytesPerRow: 0,
+                        space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+    ctx.setFillColor(black)
+    ctx.fill(CGRect(x: 0, y: 0, width: size.width * scale, height: size.height * scale))
+    ctx.translateBy(x: 0, y: size.height * scale)
+    ctx.scaleBy(x: scale, y: -scale) // from here on, points with y down
+
+    // the hop: a soft arc over the gap, in the same round strokes as the face, with a little chevron landing on Applications
+    let from = CGPoint(x: 238, y: 182), to = CGPoint(x: 402, y: 182), top = CGPoint(x: 320, y: 142)
+    ctx.move(to: from)
+    ctx.addQuadCurve(to: to, control: top)
+    let a = atan2(to.y - top.y, to.x - top.x) // which way it lands
+    for turn: CGFloat in [-0.6, 0.6] {
+        ctx.move(to: to)
+        ctx.addLine(to: CGPoint(x: to.x - 11 * cos(a + turn), y: to.y - 11 * sin(a + turn)))
+    }
+    ctx.setStrokeColor(skirt)
+    ctx.setLineWidth(2.5)
+    ctx.setLineCap(.round)
+    ctx.setLineJoin(.round)
+    ctx.strokePath()
+
+    // text in SF Pro Rounded, the 3KC window's keycap face, centered on x = 320 with y as its top
+    NSGraphicsContext.current = NSGraphicsContext(cgContext: ctx, flipped: true)
+    func say(_ text: String, _ y: CGFloat, _ pt: CGFloat, _ weight: NSFont.Weight, _ color: CGColor) {
+        let plain = NSFont.systemFont(ofSize: pt, weight: weight)
+        let font = NSFont(descriptor: plain.fontDescriptor.withDesign(.rounded) ?? plain.fontDescriptor, size: pt) ?? plain
+        let line = NSAttributedString(string: text, attributes: [.font: font, .foregroundColor: NSColor(cgColor: color)!])
+        line.draw(at: CGPoint(x: 320 - line.size().width / 2, y: y))
+    }
+    say("talk. hop. confirm.", 44, 13, .semibold, skirt)
+    say("drag me into Applications - then open me from there", 300, 15, .medium, gray)
+    say("blocked the first time? System Settings > Privacy & Security > Open Anyway", 330, 11, .regular, skirt)
+
+    let rep = NSBitmapImageRep(cgImage: ctx.makeImage()!)
+    rep.size = NSSize(width: size.width, height: size.height) // 144 dpi at 2x, so tiffutil can pair the two up for Retina
+    return rep.representation(using: .png, properties: [:])!
+}
+
 let args = CommandLine.arguments
 guard args.count > 1 else { print("usage: swift helper/icon.swift <out-dir> [logo.png]"); exit(1) }
 let iconset = URL(fileURLWithPath: args[1]).appendingPathComponent("AppIcon.iconset")
@@ -107,4 +153,7 @@ for pt in [16, 32, 128, 256, 512] { // Apple's iconset names: icon_16x16.png, ic
     try render(pt * 2).write(to: iconset.appendingPathComponent("icon_\(pt)x\(pt)@2x.png"))
 }
 if args.count > 2 { try render(512).write(to: URL(fileURLWithPath: args[2])) }
+// ponytail: every build draws the .dmg background too, only ./install.sh dmg uses it, but it's a blink and saves a flag
+try background(1).write(to: URL(fileURLWithPath: args[1]).appendingPathComponent("background.png"))
+try background(2).write(to: URL(fileURLWithPath: args[1]).appendingPathComponent("background@2x.png"))
 print("wrote \(iconset.path)")

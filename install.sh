@@ -2,9 +2,9 @@
 # Builds and installs 3-key Claude, the Helper app. Safe to re-run, updating is git pull + this again.
 #
 #   ./install.sh                 install or update, into ~/Applications
-#   ./install.sh uninstall       remove it ( from ~/Applications AND /Applications ), keep your Actions file
+#   ./install.sh uninstall       remove it ( from ~/Applications AND /Applications ), keep your script macros
 #   ./install.sh build           only build, installs NOTHING
-#   ./install.sh dmg             build 3KeyClaude.dmg to hand around, installs NOTHING
+#   ./install.sh dmg             build 3KeyClaude.dmg to hand around ( Finder lays out its window ), installs NOTHING
 #   ./install.sh test            run the Helper core tests
 #   ./install.sh release <tag>   maintainer only: build the .dmg and publish it as a GitHub release
 set -eu
@@ -40,7 +40,7 @@ build() {
     rm -rf "$BUILT" "$BUILD/AppIcon.iconset" "$BUILD/chips"
     mkdir -p "$BUILT/Contents/MacOS" "$BUILT/Contents/Resources" "$BUILD/chips"
     cp helper/Info.plist "$BUILT/Contents/"
-    # the default Actions and the example scripts, the app copies them out on first launch
+    # the default script macros ( actions.json ) and the example scripts, the app copies them out on first launch
     cp helper/actions.json "$BUILT/Contents/Resources/"
     cp -R examples "$BUILT/Contents/Resources/"
     # the app icon, drawn fresh from vectors on every build ( Info.plist points CFBundleIconFile at AppIcon )
@@ -57,31 +57,57 @@ build() {
     codesign --force --sign - "$BUILT"
 }
 
-# the .dmg: the app, a shortcut to /Applications to drag it onto, and a read-me for the one-time Open Anyway
+# the .dmg: the app and a shortcut to /Applications, on a black background with an arrow and the one thing to do
 # universal, so Apple silicon AND Intel Macs can use the same download
 dmg() {
     build "arm64 x86_64"
-    rm -rf "$BUILD/dmg" "$DMG"
-    mkdir -p "$BUILD/dmg"
+    VOLUME="/Volumes/$NAME"
+    if [ -e "$VOLUME" ]; then say "eject the $NAME disk first ( Finder can't tell two of them apart )"; exit 1; fi
+    RW="$BUILD/rw.dmg"
+    rm -rf "$BUILD/dmg" "$RW" "$DMG"
+    mkdir -p "$BUILD/dmg/.background"
     ditto "$BUILT" "$BUILD/dmg/$NAME.app"
     ln -s /Applications "$BUILD/dmg/Applications"
-    cat > "$BUILD/dmg/read me first.txt" <<'EOF'
-3-key claude
-talk. hop. enter.
-
-Run your ENTIRE agentic workflow from the 3 top keys of a wooting UwU: the Talk key tells a clanker what to do, the Cycle key hops to the next one, the Enter key approves. The 3 small keys below are bonus Actions.
-
-1. Drag 3-key Claude onto the Applications folder right next to it.
-2. Open it from your Applications folder ( NOT from in here, it just tells you to drag it first ).
-3. macOS blocks it the first time, because it isn't notarized ( that needs a paid Apple developer account ). Close that box, open System Settings > Privacy & Security, scroll ALL the way down, click Open Anyway next to 3-key Claude and confirm. Once, never again.
-4. The Setup window walks you through everything else, the UwU included.
-
-The source, the guide and the whole story: https://github.com/constdecimalserrno/3-key-claude
-
-Cheers!
-const
+    # build() drew the background at 1x and 2x, one TIFF holds both so Retina screens get the sharp one
+    tiffutil -cathidpicheck "$BUILD/background.png" "$BUILD/background@2x.png" -out "$BUILD/dmg/.background/background.tiff" >/dev/null 2>&1
+    # writable first, Finder has to save its window layout ( a .DS_Store ) onto the disk itself
+    hdiutil create -quiet -volname "$NAME" -srcfolder "$BUILD/dmg" -fs HFS+ -format UDRW "$RW"
+    hdiutil attach -quiet -readwrite -noverify -noautoopen "$RW"
+    # ponytail: this scripts Finder ( the window opens and closes again on its own ), so it only ever runs on the maintainer's Mac
+    # during ./install.sh dmg / release, and the first run asks for the Automation yes to control Finder
+    # the icon spots match the arrow helper/icon.swift draws, the bounds are the 640 x 400 background plus Finder's title bar
+    osascript >/dev/null <<EOF
+tell application "Finder"
+    tell disk "$NAME"
+        open
+        set current view of container window to icon view
+        set toolbar visible of container window to false
+        set statusbar visible of container window to false
+        set bounds of container window to {200, 120, 840, 548}
+        set opts to icon view options of container window
+        set arrangement of opts to not arranged
+        set icon size of opts to 128
+        set text size of opts to 13
+        set background picture of opts to file ".background:background.tiff"
+        set position of item "$NAME.app" of container window to {160, 185}
+        set position of item "Applications" of container window to {480, 185}
+        update without registering applications
+        delay 1
+        close
+    end tell
+end tell
 EOF
-    hdiutil create -quiet -volname "$NAME" -srcfolder "$BUILD/dmg" -format UDZO "$DMG"
+    for _ in 1 2 3 4 5; do [ -e "$VOLUME/.DS_Store" ] && break; sleep 1; done # Finder saves the layout in its own time
+    # the 3KC icon for the mounted disk: the icon file plus the volume's custom-icon flag
+    # AFTER Finder's turn, Finder drops both when it opens the window ( seen on macOS 15 )
+    cp "$BUILT/Contents/Resources/AppIcon.icns" "$VOLUME/.VolumeIcon.icns"
+    # ponytail: no SetFile? then the flag byte goes straight into FinderInfo, the other 31 bytes ( empty here anyway ) get zeroed
+    if [ -x /usr/bin/SetFile ]; then SetFile -a C "$VOLUME"
+    else xattr -wx com.apple.FinderInfo 0000000000000000040000000000000000000000000000000000000000000000 "$VOLUME"; fi
+    sync
+    hdiutil detach -quiet "$VOLUME" || { sleep 2; hdiutil detach -quiet -force "$VOLUME"; }
+    hdiutil convert -quiet "$RW" -format UDZO -imagekey zlib-level=9 -o "$DMG"
+    rm -f "$RW"
 }
 
 # takes every copy out of the login items and quits it, a fresh one adds itself back on launch
@@ -119,7 +145,7 @@ install)
     rm -rf "$APP"
     ditto "$BUILT" "$APP"
     reset_grants || say "couldn't reset the old permission grants ( fine on a first install ), if $NAME is already under Accessibility, remove it with the - button first"
-    [ -e "$ACTIONS" ] || say "the app puts the default Actions file and the example scripts in ~/.config/uwu/, make them yours!"
+    [ -e "$ACTIONS" ] || say "the app puts the default script macros ( actions.json ) and the example scripts in ~/.config/uwu/, make them yours!"
     open "$APP" # the first launch adds it to the login items
     say "$SHORT is running, and it starts at login from now on"
     if [ -e "$DMG_APP" ]; then say "heads up, there's another copy in /Applications ( from the .dmg? ), drag one of the two to the Trash"; fi
@@ -137,7 +163,7 @@ uninstall)
     if [ -e "$DMG_APP" ]; then rm -rf "$DMG_APP" || say "couldn't remove $DMG_APP, drag it to the Trash yourself"; fi
     reset_grants || true
     defaults delete "$ID" >/dev/null 2>&1 || true # so a comeback gets the Setup window again
-    say "$SHORT is gone, your Actions file and the examples are still in ~/.config/uwu/ in case you come back"
+    say "$SHORT is gone, your script macros and the examples are still in ~/.config/uwu/ in case you come back"
     ;;
 build)
     build
@@ -154,7 +180,7 @@ release)
     command -v gh >/dev/null 2>&1 || { say "release needs gh, the GitHub CLI ( maintainer only, nobody else needs it )"; exit 1; }
     dmg
     # tags the commit you built from, so push it first
-    gh release create "$TAG" "$DMG" --target "$(git rev-parse HEAD)" --title "$NAME $TAG" --notes "talk. hop. enter.
+    gh release create "$TAG" "$DMG" --target "$(git rev-parse HEAD)" --title "$NAME $TAG" --notes "talk. hop. confirm.
 
 Download 3KeyClaude.dmg, drag the app into Applications and open it from there. macOS blocks it the first time because it isn't notarized, so go to System Settings > Privacy & Security, scroll ALL the way down, click Open Anyway and confirm. Once, never again. The Setup window does the rest.
 

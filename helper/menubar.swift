@@ -1,5 +1,5 @@
 // The menu bar icon ( the ONE thing you see of 3KC ) and the 3KC window behind it:
-// the Action keys without touching JSON, your folders, Accessibility, and the way back into the Setup window.
+// the Macro keys without touching JSON, your folders, Accessibility, and the way back into the Setup window.
 // SwiftUI in a plain NSWindow, same as setup.swift.
 import AppKit
 import SwiftUI
@@ -11,7 +11,7 @@ let sides = ["left", "middle", "right"]
 // the window's one model, plus the menu bar icon's menu and the window's delegate
 final class MenuBar: NSObject, ObservableObject, NSWindowDelegate {
     static let shared = MenuBar()
-    @Published var rows: [Entry] = [] // what the window shows, one per Action key ( plus any extras, they get saved as they are )
+    @Published var rows: [Entry] = [] // what the window shows, one per Macro key ( plus any extras, they get saved as they are )
     @Published private(set) var saved: [Entry]? // what the file says, nil when it isn't a JSON list ( then the window keeps its hands off )
     @Published var note = ""
     @Published var trusted = AXIsProcessTrusted()
@@ -32,7 +32,7 @@ final class MenuBar: NSObject, ObservableObject, NSWindowDelegate {
         menu.addItem(withTitle: "Run setup…", action: #selector(setup), keyEquivalent: "").target = self
         menu.addItem(.separator())
         menu.addItem(withTitle: "Open scripts folder", action: #selector(openScripts), keyEquivalent: "").target = self
-        menu.addItem(withTitle: "Open Actions file", action: #selector(openActions), keyEquivalent: "").target = self
+        menu.addItem(withTitle: "Open actions.json", action: #selector(openActions), keyEquivalent: "").target = self
         menu.addItem(.separator())
         menu.addItem(withTitle: "Quit 3KC", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         item?.menu = menu
@@ -76,7 +76,7 @@ final class MenuBar: NSObject, ObservableObject, NSWindowDelegate {
         text = try? String(contentsOfFile: actionsFile, encoding: .utf8)
         saved = entries(text)
         rows = saved ?? []
-        note = text == nil ? "no Actions file yet, Save makes one" : ""
+        note = text == nil ? "no actions.json yet, Save makes one" : ""
     }
 
     func save() {
@@ -131,7 +131,7 @@ final class MenuBar: NSObject, ObservableObject, NSWindowDelegate {
         try? FileManager.default.createDirectory(atPath: scriptsFolder, withIntermediateDirectories: true)
         let panel = NSOpenPanel()
         panel.directoryURL = URL(fileURLWithPath: scriptsFolder)
-        panel.message = "Pick a bash or AppleScript file for the \(sides[i]) Action key"
+        panel.message = "Pick a bash or AppleScript file for the \(sides[i]) Macro key"
         panel.prompt = "Choose"
         panel.beginSheetModal(for: window) { [self] answer in
             if answer == .OK, let url = panel.url { rows[i].text = shorten(url.path, actionWorld(nil)) }
@@ -235,14 +235,14 @@ struct MenuBarWindow: View {
                 HStack(spacing: 10) {
                     keycap("talk.", "Right Ctrl")
                     keycap("hop.", "F13")
-                    keycap("enter.", "Return")
+                    keycap("confirm.", "Return")
                 }
                 .padding(12)
                 .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Color.black))
                 HStack(alignment: .top, spacing: 10) {
                     caption("Talk key", "hold to talk")
-                    caption("Cycle key", "next Session")
-                    caption("Enter key", "approve")
+                    caption("Hop key", "next terminal")
+                    caption("Confirm key", "approve")
                 }
                 .padding(.horizontal, 12)
             }
@@ -278,12 +278,12 @@ struct MenuBarWindow: View {
     var actionKeys: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text("Action keys").font(.headline)
+                Text("Macro keys").font(.headline)
                 Text("the 3 small ones, left to right").foregroundStyle(.secondary)
             }
             if bar.saved == nil {
                 Text("Your actions.json isn't a JSON list, so I'm keeping my hands off it. Fix the typo by hand, then come back.")
-                Button("Open Actions file") { bar.openActions() }
+                Button("Open actions.json") { bar.openActions() }
             } else {
                 ForEach(0..<3, id: \.self) { row($0) }
                 HStack(spacing: 8) {
@@ -343,7 +343,7 @@ struct MenuBarWindow: View {
         }
         .padding(5)
         .background(RoundedRectangle(cornerRadius: 5, style: .continuous).fill(Color.black))
-        .help("\(sides[i]) Action key ( F\(16 + i) )")
+        .help("\(sides[i]) Macro key ( F\(16 + i) )")
     }
 
     var folders: some View {
@@ -352,7 +352,7 @@ struct MenuBarWindow: View {
             HStack {
                 Button("Scripts") { bar.openScripts() }
                 Button("Examples") { bar.openExamples() }
-                Button("Actions file") { bar.openActions() }
+                Button("actions.json") { bar.openActions() }
             }
             Text("Scripts is for your own, Choose… starts there.").font(.callout).foregroundStyle(.secondary)
         }
@@ -361,7 +361,7 @@ struct MenuBarWindow: View {
     var accessibility: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Accessibility").font(.headline)
-            Label(bar.trusted ? "On, the Action keys can type" : "Off, the Action keys can't type",
+            Label(bar.trusted ? "On, the Macro keys can type" : "Off, the Macro keys can't type",
                   systemImage: bar.trusted ? "checkmark.circle.fill" : "exclamationmark.circle")
                 .foregroundStyle(bar.trusted ? Color.green : Color.orange)
             Button("Open Accessibility settings") { Setup.shared.openAccessibility() }

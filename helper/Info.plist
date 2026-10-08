@@ -15,14 +15,14 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>1.0.1</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>1.0.1</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>13.0</string>
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>The Cycle key asks iterm2 and ghostty for their Sessions and focuses the next one, and some of your Actions ( like the one that starts claude in a new terminal window ) talk to other apps too.</string>
+	<string>The Hop key asks iterm2 and ghostty for their Sessions and focuses the next one, and some of your script macros ( like the one that starts claude in a new terminal window ) talk to other apps too.</string>
 </dict>
 </plist>
