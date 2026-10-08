@@ -1,5 +1,6 @@
 // The Helper core: which key fired + a snapshot of the world in, exactly ONE effect out.
 // Pure on purpose ( no files, no clocks, no AppKit ), so tests.swift can poke it without a Mac full of windows.
+// The one peek at the disk it needs ( is that script there, is it executable ) comes in through World.file, tests hand it a fake one.
 import Foundation
 
 // the supported terminal apps by bundle id, in Cycle order
@@ -17,16 +18,23 @@ enum Key: Equatable, CustomStringConvertible {
     }
 }
 
+// what's at a path on disk, as far as a script Action cares
+enum File { case missing, plain, executable }
+
 struct World {
     var actions: String? = nil // the Actions file text, nil when there is no file
     var listings: [String: String] = [:] // bundle id -> what its listing script printed, ONLY running terminal apps are in here
     var frontmost: String? = nil // bundle id of the frontmost app
     var lastTerminal: String? = nil // bundle id of the terminal app that was frontmost last
+    var folder = "" // the folder holding the Actions file, relative script paths start there
+    var home = "" // your home folder, for script paths starting with ~/
+    var file: (String) -> File = { _ in .missing } // the shell's peek at the disk
 }
 
 enum Effect: Equatable {
     case type(String)
     case run(String)
+    case script(runner: String?, path: String) // run the file with that runner, or as is when it's nil
     case focus(app: String, session: String) // bundle id, Session id
     case activate(String) // bundle id
     case nothing(String) // why, one line for the log
@@ -50,9 +58,20 @@ func decide(_ key: Key, _ world: World) -> Effect {
         if let entry = list[n - 1] as? [String: String], entry.count == 1 {
             if let text = entry["type"] { return .type(text) }
             if let command = entry["run"] { return .run(command) }
+            if let path = entry["script"] { return script(path, world) }
         }
-        return .nothing(#"entry \#(n) in actions.json must be {"type": "..."} or {"run": "..."}"#)
+        return .nothing(#"entry \#(n) in actions.json must be {"type": "..."}, {"run": "..."} or {"script": "..."}"#)
     }
+}
+
+// a script Action: absolute, from your home folder ( ~/ ), or from the folder holding the Actions file
+// ponytail: only YOUR ~, a ~someone/ path is just relative like any other
+func script(_ path: String, _ world: World) -> Effect {
+    let full = path.hasPrefix("/") ? path : path.hasPrefix("~/") ? world.home + path.dropFirst() : world.folder + "/" + path
+    let file = world.file(full)
+    if file == .missing { return .nothing("no script at \(full)") }
+    if ["applescript", "scpt"].contains((full as NSString).pathExtension.lowercased()) { return .script(runner: "/usr/bin/osascript", path: full) }
+    return file == .executable ? .script(runner: nil, path: full) : .script(runner: "/bin/sh", path: full)
 }
 
 // A listing is one line per Session plus one for the app's current Session, fields split by a tab:

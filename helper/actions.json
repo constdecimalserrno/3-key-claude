@@ -1,5 +1,5 @@
 [
-  {"run": "osascript -e 'tell application \"iTerm\" to create window with default profile' -e 'tell application \"iTerm\" to activate'"},
+  {"script": "examples/new-claude-session.sh"},
   {"type": "yes"},
   {"type": "no"}
 ]

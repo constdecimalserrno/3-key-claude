@@ -3,7 +3,8 @@ import AppKit
 import Carbon.HIToolbox
 import ServiceManagement
 
-let actionsFile = NSString(string: "~/.config/uwu/actions.json").expandingTildeInPath
+let uwuFolder = NSString(string: "~/.config/uwu").expandingTildeInPath
+let actionsFile = uwuFolder + "/actions.json"
 
 // one fixed prefix, so the log command in guide.md can find us
 func log(_ line: String) { NSLog("uwu: %@", line) }
@@ -33,13 +34,16 @@ if SMAppService.mainApp.status != .enabled {
     catch { log("couldn't add us to the login items: \(error)") }
 }
 
-// no Actions file yet? copy the defaults that ship inside the app, then they're yours to edit
-if !FileManager.default.fileExists(atPath: actionsFile), let defaults = Bundle.main.path(forResource: "actions", ofType: "json") {
+// no Actions file or examples folder yet? copy the ones that ship inside the app, then they're yours to edit, NEVER overwritten
+// ponytail: the whole examples folder or nothing, so a new example in an update only shows up once you delete yours
+for name in ["actions.json", "examples"] {
+    let mine = uwuFolder + "/" + name
+    guard !FileManager.default.fileExists(atPath: mine), let shipped = Bundle.main.resourceURL?.appendingPathComponent(name).path else { continue }
     do {
-        try FileManager.default.createDirectory(atPath: (actionsFile as NSString).deletingLastPathComponent, withIntermediateDirectories: true)
-        try FileManager.default.copyItem(atPath: defaults, toPath: actionsFile)
-        log("put the default Actions at ~/.config/uwu/actions.json, make them yours!")
-    } catch { log("couldn't put the default Actions at ~/.config/uwu/actions.json: \(error)") }
+        try FileManager.default.createDirectory(atPath: uwuFolder, withIntermediateDirectories: true)
+        try FileManager.default.copyItem(atPath: shipped, toPath: mine)
+        log("put \(name) at ~/.config/uwu/\(name), make it yours!")
+    } catch { log("couldn't put \(name) at ~/.config/uwu/\(name): \(error)") }
 }
 
 // what wootility sends for each key, see the key table in guide.md
@@ -146,6 +150,13 @@ func pressed(_ key: Key) {
     } else {
         // re-read on EVERY press, so edits apply right away
         world.actions = try? String(contentsOfFile: actionsFile, encoding: .utf8)
+        world.folder = uwuFolder
+        world.home = NSHomeDirectory()
+        world.file = { path in
+            var folder: ObjCBool = false // a folder is no script, so it counts as missing
+            guard FileManager.default.fileExists(atPath: path, isDirectory: &folder), !folder.boolValue else { return .missing }
+            return FileManager.default.isExecutableFile(atPath: path) ? .executable : .plain
+        }
     }
     switch decide(key, world) {
     case .type(let text):
@@ -153,7 +164,10 @@ func pressed(_ key: Key) {
         type(text)
     case .run(let command):
         log("\(key): running \(command)")
-        run(command)
+        launch("/bin/sh", ["-c", command])
+    case .script(let runner, let path):
+        log("\(key): running \(path)" + (runner.map { " with \($0)" } ?? ""))
+        if let runner { launch(runner, [path]) } else { launch(path, []) }
     case .focus(let app, let session):
         log("\(key): focusing Session \(session) in \(app)")
         applescript(scripts[app]!.focus(session))
@@ -198,10 +212,12 @@ func type(_ text: String) {
     }
 }
 
+// fire-and-forget, for run and script Actions alike
 // ponytail: launchd's PATH is only /usr/bin:/bin:/usr/sbin:/sbin, anything else needs its full path
-func run(_ command: String) {
-    do { _ = try Process.run(URL(fileURLWithPath: "/bin/sh"), arguments: ["-c", command]) } // fire-and-forget
-    catch { log("couldn't run \(command): \(error)") }
+// ponytail: an executable script without a #! line fails right here, and the log says so
+func launch(_ program: String, _ arguments: [String]) {
+    do { _ = try Process.run(URL(fileURLWithPath: program), arguments: arguments) }
+    catch { log("couldn't run \(program): \(error)") }
 }
 
 // Carbon hotkeys need no Accessibility and no Input Monitoring

@@ -224,11 +224,11 @@ struct SetupView: View {
             Text("While I'm open, the Cycle key and Action keys only tick boxes in here.").foregroundStyle(.secondary)
         case .actions:
             heading("The Action keys")
-            Text("The 3 small keys each run one Action: a new iterm2 window, typing yes, typing no. Press each one.")
+            Text("The 3 small keys each run one Action: a new claude session, typing yes, typing no. Press each one.")
             check("left ( F16 )", setup.seen.contains("Action key 1"))
             check("middle ( F17 )", setup.seen.contains("Action key 2"))
             check("right ( F18 )", setup.seen.contains("Action key 3"))
-            Text("Make them yours in `~/.config/uwu/actions.json`, I re-read it on EVERY press.")
+            Text("Make them yours in `~/.config/uwu/actions.json`, I re-read it on EVERY press. An Action can type text, run a command or run ANY bash or AppleScript file, ready-made ones are in `~/.config/uwu/examples/`.")
             Button("Open Actions file") { setup.openActions() }
         case .done:
             heading("All set!")

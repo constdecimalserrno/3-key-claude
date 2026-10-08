@@ -17,10 +17,14 @@ enum Tests {
     static func main() {
         let nothing = Effect.nothing("")
 
-        // the default Actions file that ships in helper/actions.json
-        let defaults = World(actions: try? String(contentsOfFile: CommandLine.arguments[1], encoding: .utf8))
-        expect("default Action 1 opens a new iterm2 window", decide(.action(1), defaults),
-               .run(#"osascript -e 'tell application "iTerm" to create window with default profile' -e 'tell application "iTerm" to activate'"#))
+        // the default Actions file that ships in helper/actions.json, against the REAL examples/ in the clone,
+        // which is what the app copies next to it, so a renamed example can't quietly break key 1
+        let disk: (String) -> File = { path in
+            FileManager.default.isExecutableFile(atPath: path) ? .executable : FileManager.default.fileExists(atPath: path) ? .plain : .missing
+        }
+        let defaults = World(actions: try? String(contentsOfFile: CommandLine.arguments[1], encoding: .utf8), folder: ".", file: disk)
+        expect("default Action 1 starts a new claude session", decide(.action(1), defaults),
+               .script(runner: nil, path: "./examples/new-claude-session.sh"))
         expect("default Action 2 types yes, no Return", decide(.action(2), defaults), .type("yes"))
         expect("default Action 3 types no, no Return", decide(.action(3), defaults), .type("no"))
 
@@ -29,6 +33,33 @@ enum Tests {
         expect("run", decide(.action(1), mine), .run("say uwu"))
         expect("type arrives exactly", decide(.action(2), mine), .type("ünïcödé ok"))
         expect("type nothing at all", decide(.action(3), mine), .type(""))
+
+        // script Actions, on a fake disk
+        let files: [String: File] = [
+            "/h/.config/uwu/examples/new.sh": .executable,
+            "/h/code/plain.sh": .plain,
+            "/opt/hi.applescript": .plain,
+            "/h/.config/uwu/hi.scpt": .plain,
+            "/h/.config/uwu/LOUD.SCPT": .plain,
+            "/h/bin/x.applescript": .executable,
+            "/h/bin/tool": .executable,
+        ]
+        func script(_ path: String) -> Effect {
+            decide(.action(1), World(actions: #"[{"script": "\#(path)"}]"#, folder: "/h/.config/uwu", home: "/h", file: { files[$0] ?? .missing }))
+        }
+        expect("script: relative, from the Actions folder", script("examples/new.sh"), .script(runner: nil, path: "/h/.config/uwu/examples/new.sh"))
+        expect("script: ~/ is your home folder", script("~/code/plain.sh"), .script(runner: "/bin/sh", path: "/h/code/plain.sh"))
+        expect("script: absolute", script("/opt/hi.applescript"), .script(runner: "/usr/bin/osascript", path: "/opt/hi.applescript"))
+        expect("script: not executable runs with sh", script("/h/code/plain.sh"), .script(runner: "/bin/sh", path: "/h/code/plain.sh"))
+        expect("script: executable runs as is", script("~/bin/tool"), .script(runner: nil, path: "/h/bin/tool"))
+        expect("script: .scpt runs with osascript", script("hi.scpt"), .script(runner: "/usr/bin/osascript", path: "/h/.config/uwu/hi.scpt"))
+        expect("script: .SCPT too", script("LOUD.SCPT"), .script(runner: "/usr/bin/osascript", path: "/h/.config/uwu/LOUD.SCPT"))
+        expect("script: an executable .applescript still runs with osascript", script("~/bin/x.applescript"),
+               .script(runner: "/usr/bin/osascript", path: "/h/bin/x.applescript"))
+        expect("script: missing file", script("examples/gone.sh"), nothing)
+        expect("script: missing absolute file", script("/nope.sh"), nothing)
+        expect("script: ~someone/ is just relative", script("~h/code/plain.sh"), nothing)
+        expect("script: empty path", script(""), nothing)
 
         // missing
         expect("missing Actions file", decide(.action(1), World(actions: nil)), nothing)
@@ -49,6 +80,8 @@ enum Tests {
             ("number instead of text", #"[{"type": 1}]"#),
             ("unknown key", #"[{"say": "hi"}]"#),
             ("both type and run", #"[{"type": "a", "run": "b"}]"#),
+            ("both run and script", #"[{"run": "a", "script": "b"}]"#),
+            ("script that's a list", #"[{"script": ["a.sh"]}]"#),
             ("plain string", #"["yes"]"#),
             ("null", "[null]"),
             ("empty object", "[{}]"),

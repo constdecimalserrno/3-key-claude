@@ -23,6 +23,6 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>The Cycle key asks iterm2 and ghostty for their Sessions and focuses the next one, and some of your Actions ( like the one that opens a new iterm2 window ) talk to other apps too.</string>
+	<string>The Cycle key asks iterm2 and ghostty for their Sessions and focuses the next one, and some of your Actions ( like the one that starts claude in a new terminal window ) talk to other apps too.</string>
 </dict>
 </plist>
