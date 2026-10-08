@@ -35,8 +35,8 @@ _Avoid_: switcher, rotation, MRU
 ### Helper
 
 **Helper**:
-The optional background app on the Mac that powers the Cycle key and Action keys; the Talk key and Enter key work without it.
-_Avoid_: daemon, agent, service
+The optional background app on the Mac that powers the Cycle key and Action keys; the Talk key and Enter key work without it. The app itself is called Kuro.
+_Avoid_: daemon, agent, service, UwU Helper
 
 ### Actions
 

@@ -72,7 +72,7 @@ The Talk key and the Enter key work without it, so if that's all you want, you'r
    ```
 
 2. No Command Line Tools yet? The installer asks macOS to install them and stops, so click Install, wait for it, and run `./install.sh` again.
-3. macOS might tell you a background item was added, that's the Helper. It starts at login from now on and comes back by itself if it ever crashes.
+3. macOS might tell you a background item was added, that's Kuro, the Helper. It starts at login from now on.
 4. Grant Accessibility, right below.
 
 Updating is `git pull` and `./install.sh` again, it's safe to re-run as often as you like.
@@ -82,17 +82,17 @@ Updating is `git pull` and `./install.sh` again, it's safe to re-run as often as
 The Helper types for you, and macOS ( rightfully ) wants your yes first.
 
 1. The installer opens System Settings > Privacy & Security > Accessibility for you, and the Helper asks too.
-2. Flip the switch next to UwU Helper.
+2. Flip the switch next to Kuro.
 
 That's it, no restart needed.
 
-The first time the Cycle key or an Action talks to another app ( like iterm2 ), macOS asks if UwU Helper may control it. Click Allow.
+The first time the Cycle key or an Action talks to another app ( like iterm2 ), macOS asks if Kuro may control it. Click Allow.
 
 ### Re-grant after EVERY reinstall
 
-The Helper is ad-hoc signed, so every build is a brand new app as far as macOS is concerned, and macOS forgets it ever trusted it. The installer wipes the stale grants for you, so after each `./install.sh` you just flip the UwU Helper switch under Accessibility again ( and click Allow again on the next Automation prompt ). If a key stops working right after an update, it's this. Every time.
+The Helper is ad-hoc signed, so every build is a brand new app as far as macOS is concerned, and macOS forgets it ever trusted it. The installer wipes the stale grants for you, so after each `./install.sh` you just flip the Kuro switch under Accessibility again ( and click Allow again on the next Automation prompt ). If a key stops working right after an update, it's this. Every time.
 
-If the installer said it couldn't reset the old grants, select UwU Helper in the Accessibility list, remove it with the - button, then add it back with + ( it lives in `~/Applications` ).
+If the installer said it couldn't reset the old grants, select Kuro in the Accessibility list, remove it with the - button, then add it back with + ( it lives in `~/Applications` ).
 
 ### Cycle key
 
@@ -115,10 +115,10 @@ Sessions on other Spaces and in full-screen windows are in the Cycle too, but ma
 
 Without it, the Cycle can land you on a Session you can't see.
 
-The first press also asks for one more permission: macOS wants to know if UwU Helper may control iterm2 ( that's how it reads your Sessions and focuses the next one ). Click Allow, it's a one-time thing ( well, once per reinstall, same deal as Accessibility ). The Helper only waits 2 seconds for a terminal app to answer, so a stuck one can't freeze your keys, which also means the press that brought up the prompt probably did nothing. Just press again after Allow. Clicked Don't Allow by accident, or the log says something about not being authorized to send Apple events? Flip it back on:
+The first press also asks for one more permission: macOS wants to know if Kuro may control iterm2 ( that's how it reads your Sessions and focuses the next one ). Click Allow, it's a one-time thing ( well, once per reinstall, same deal as Accessibility ). The Helper only waits 2 seconds for a terminal app to answer, so a stuck one can't freeze your keys, which also means the press that brought up the prompt probably did nothing. Just press again after Allow. Clicked Don't Allow by accident, or the log says something about not being authorized to send Apple events? Flip it back on:
 
 1. Open System Settings > Privacy & Security > Automation.
-2. Expand UwU Helper.
+2. Expand Kuro.
 3. Turn on the switch next to iterm2 ( or ghostty ).
 
 ### ghostty
@@ -126,7 +126,7 @@ The first press also asks for one more permission: macOS wants to know if UwU He
 Got ghostty? Its Sessions join the Cycle right after iterm2's, so one Cycle key walks through both apps and wraps around. Only one of the two running is fine too.
 
 1. You need ghostty 1.3 or newer, that's the first one that speaks AppleScript ( Ghostty > About Ghostty tells you ).
-2. The first press with ghostty open asks if UwU Helper may control ghostty, the same one-time Automation prompt as for iterm2. Click Allow, then press again.
+2. The first press with ghostty open asks if Kuro may control ghostty, the same one-time Automation prompt as for iterm2. Click Allow, then press again.
 3. ghostty's AppleScript must stay on. It's on by default, so you only need to care if your ghostty config has this line, delete it ( or make it `true` ) and restart ghostty:
 
    ```ini
@@ -185,7 +185,7 @@ Yes, the full path, zsh has its own built-in `log` that just says "too many argu
 Granted Accessibility and typing still does nothing? Kick the Helper:
 
 ```sh
-launchctl kickstart -k gui/$(id -u)/dev.constdecimalserrno.uwu
+pkill -x Kuro; open -a Kuro
 ```
 
 ### Uninstall
@@ -194,7 +194,7 @@ launchctl kickstart -k gui/$(id -u)/dev.constdecimalserrno.uwu
 ./install.sh uninstall
 ```
 
-That removes the app and its LaunchAgent and leaves `~/.config/uwu/actions.json` alone, in case you come back. Delete it by hand if you want it gone too.
+That takes Kuro out of your login items, removes the app and leaves `~/.config/uwu/actions.json` alone, in case you come back. Delete it by hand if you want it gone too.
 
 ### Run the tests
 

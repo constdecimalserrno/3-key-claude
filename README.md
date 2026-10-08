@@ -38,7 +38,7 @@ cd wooting-uwu-ai
 ./install.sh
 ```
 
-Then flip the switch next to UwU Helper in the Accessibility settings the installer opens, and do it again after EVERY reinstall, macOS forgets. ( Or just ask your clanker to run it, the switch is still on you though. )
+Then flip the switch next to Kuro in the Accessibility settings the installer opens, and do it again after EVERY reinstall, macOS forgets. ( Or just ask your clanker to run it, the switch is still on you though. )
 
 ## The rest
 
