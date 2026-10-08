@@ -21,7 +21,7 @@ _( GIF of the Cycle key coming soon, I still have to record it )_
 3. Open 3-key Claude from your Applications folder. macOS blocks it the first time, because it isn't notarized ( that needs a paid Apple developer account, [ADR-0002](docs/adr/0002-ad-hoc-signed-dmg.md) has the story ). Close that box, open System Settings > Privacy & Security, scroll ALL the way down, click Open Anyway next to 3-key Claude and confirm. Once, never again.
 4. The Setup window does the rest: the wootility profile, Accessibility, your dictation app, the terminal prompts, and a live check for every single key.
 
-That's it. 3KC starts at login, has no Dock or menu bar icon, never touches the network and uses nothing but Apple's own frameworks. Want the Setup window back? Just open 3-key Claude again.
+That's it. 3KC starts at login, never touches the network and uses nothing but Apple's own frameworks. No Dock icon, just a tiny UwU face in your menu bar: click it for the 3KC window, where you set the Action keys, open your scripts folder or run the setup again. Hide your menu bar icons? Open 3KC from Spotlight and that window shows up all the same.
 
 ### Or build it yourself
 
@@ -57,7 +57,9 @@ Each Action key does one of three things: type some text, run a shell command, o
 
 The folder and the terminal or app sit right at the top of each one, change them and you're done.
 
-Just like the old computer magazines, here is how you can add your own!
+The easy way: click the UwU face in your menu bar > Configure keys, pick Type, Run or Script for each key ( Choose… starts in `~/.config/uwu/scripts/`, a handy home for your own ), hit Test, then Save. No JSON.
+
+Rather type it yourself? Just like the old computer magazines, here is how you can add your own!
 
 ```json
 [
@@ -71,7 +73,7 @@ That's `~/.config/uwu/actions.json`, one entry per key, left to right. Relative 
 
 ## The rest
 
-[guide.md](guide.md) is the manual reference for everything the Setup window does, plus the stuff around it: the key table to map by hand in case the share code breaks, wispr flow, ghostty, making the Actions yours, reading the log and uninstalling. How I actually use all this goes up on [my blog](https://constdecimalserrno.dev/) soon ( the post isn't written yet, so that's just the front page for now ).
+[guide.md](guide.md) is the manual reference for everything the Setup window does, plus the stuff around it: the menu bar icon, the key table to map by hand in case the share code breaks, wispr flow, ghostty, making the Actions yours, reading the log and uninstalling. How I actually use all this goes up on [my blog](https://constdecimalserrno.dev/) soon ( the post isn't written yet, so that's just the front page for now ).
 
 ## Dear wooting
 

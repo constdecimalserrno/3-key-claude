@@ -43,8 +43,12 @@ The optional background app on the Mac that powers the Cycle key and Action keys
 _Avoid_: daemon, agent, service, UwU Helper, Kuro, Three-Button Workflow, Three-Key Workflow
 
 **Setup window**:
-The Helper's one-time window that walks you through the whole setup, one step per page, with a live check for every key; it opens on first launch and whenever the app is opened while already running.
+The Helper's one-time window that walks you through the whole setup, one step per page, with a live check for every key; it opens on first launch until you finish it, and again from the menu bar icon.
 _Avoid_: onboarding, wizard, welcome screen
+
+**3KC window**:
+The Helper's window behind its menu bar icon, for setting the Action keys without touching the Actions file by hand; it also opens when the app is opened while already running, once setup is done.
+_Avoid_: settings, preferences, config window
 
 ### Actions
 

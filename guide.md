@@ -17,7 +17,7 @@ Good to know:
 
 - While the Setup window is open, the Cycle key and the Action keys ONLY tick their boxes. Close it and they're real.
 - Closing it on the last page marks setup done. Close it earlier and it comes back at your next login.
-- Want it back? Open 3-key Claude again ( Finder, Launchpad, Spotlight ), it's running anyway.
+- From then on 3KC lives in your menu bar as a little UwU face ( [more below](#the-menu-bar-icon-and-the-3kc-window) ). Want the Setup window back? Click the face > Run setup.
 - Opened it straight from the `.dmg`? It tells you to drag it into Applications first and quits, nothing gets set up from in there.
 
 Everything below is the manual reference: what the Setup window does, step by step, for when you'd rather do it by hand, something breaks, or you're just curious. Part 1 maps the UwU and hooks up your dictation app with nothing installed on the Mac, part 2 is 3KC itself.
@@ -77,7 +77,7 @@ That's the Talk key and the Enter key done, with nothing installed on the Mac. T
 
 ## Part 2: 3-key Claude, the Helper
 
-3-key Claude ( 3KC for short ) is a tiny app that sits in the background, listens for the Cycle key and the Action keys, and does the thing. It uses only Apple's own frameworks ( no homebrew, no third-party code, no xcode project ), it has no Dock or menu bar icon, it never touches the network, and all of it lives in `helper/`, small enough to read over one coffee. Please do, you're about to give it Accessibility.
+3-key Claude ( 3KC for short ) is a tiny app that sits in the background, listens for the Cycle key and the Action keys, and does the thing. It uses only Apple's own frameworks ( no homebrew, no third-party code, no xcode project ), it has no Dock icon ( just a small UwU face in your menu bar ), it never touches the network, and all of it lives in `helper/`, small enough to read over one coffee. Please do, you're about to give it Accessibility.
 
 The Talk key and the Enter key work without it, so if that's all you want, you're done.
 
@@ -117,6 +117,26 @@ That's it, no restart needed.
 
 - From source: the installer wipes the stale grants for you, so you just flip the 3-key Claude switch under Accessibility again ( and click Allow again on the next Automation prompt ).
 - From the `.dmg`, or the installer said it couldn't reset the old grants: the old switch may still LOOK on. Select 3-key Claude in the Accessibility list, remove it with the - button, then add it back with +.
+
+### The menu bar icon and the 3KC window
+
+Once setup is done, the little UwU face in your menu bar is all you see of 3KC. Click it:
+
+- Configure keys opens the 3KC window ( below ).
+- Run setup brings the Setup window back, from the top.
+- Open scripts folder opens `~/.config/uwu/scripts/` ( made for you if it isn't there yet ), a handy spot for your own scripts.
+- Open Actions file opens `~/.config/uwu/actions.json` in your editor.
+- Quit 3KC quits it until your next login, or until you open it again.
+
+Hide your menu bar icons, or the notch ate this one? Open 3KC again from Spotlight ( type "3KC" ), Finder or Launchpad. It's running anyway, so you just get the 3KC window.
+
+The 3KC window has:
+
+- The top three keys, read-only, with what each one sends. They live on the UwU itself, so the window just links you to wootility.
+- One row per Action key, left to right: pick Type, Run or Script, then fill in the text, the command or the file ( Choose… starts in the scripts folder ). Test runs that row right now, saved or not. Testing a Type Action gives you 3 seconds to click where it should type, and types NOTHING if you stay in the window.
+- Save writes `~/.config/uwu/actions.json`, the keys use it on the very next press. NOTHING gets written until you click Save, and the window re-reads the file every time it opens, so hand edits win. Edited the file by hand while the window was open? Save says so and leaves your edit alone.
+- An entry the window doesn't understand shows up as "As is" and stays exactly as it was. A file that isn't a JSON list at all, it doesn't touch until you fix it by hand.
+- Buttons for your folders, the Accessibility status with a button to its settings, and Run setup again.
 
 ### Cycle key
 
@@ -173,7 +193,7 @@ Typing NEVER presses Return at the end, that's the Enter key's job, so nothing g
 
 ### Make the Actions yours
 
-The Actions live in `~/.config/uwu/actions.json` ( 3KC puts the defaults there on first launch, and the Setup window has an Open Actions file button ), a list of three entries, one per Action key, left to right. Each entry is one of three kinds:
+The 3KC window does all of this for you, no JSON needed. Under the hood, the Actions live in `~/.config/uwu/actions.json` ( 3KC puts the defaults there on first launch, the menu bar icon's Open Actions file opens it ), a list of three entries, one per Action key, left to right. Each entry is one of three kinds:
 
 - `{"type": "..."}` types some text.
 - `{"run": "..."}` runs a shell command, through `/bin/sh -c`.
@@ -194,7 +214,7 @@ The Actions live in `~/.config/uwu/actions.json` ( 3KC puts the defaults there o
 
 The first time a script talks to iterm2, ghostty or terminal, macOS asks if 3KC may control it, click Allow ( the same one-time Automation prompt as for the Cycle key ). Updates NEVER overwrite your copies, so for fresh ones, delete `~/.config/uwu/examples/` and restart 3KC with `pkill -x 3KeyClaude; open -a "3-key Claude"`, or copy them over from the clone.
 
-Just like the old computer magazines, here is how you can add your own! Put a script in the clone's `scripts/` folder ( git ignores everything in there ) or anywhere else you like, say `scripts/standup.sh`:
+Just like the old computer magazines, here is how you can add your own! Put a script in `~/.config/uwu/scripts/` ( the 3KC window's Choose… starts there ), in the clone's `scripts/` folder ( git ignores everything in there ) or anywhere else you like, say `scripts/standup.sh`:
 
 ```sh
 #!/bin/sh
@@ -204,7 +224,7 @@ open https://github.com/constdecimalserrno/3-key-claude/issues
 exec /bin/sh ~/.config/uwu/examples/new-claude-session.sh ~/code/3-key-claude
 ```
 
-Then point an Action key at it in `~/.config/uwu/actions.json`, with the path to wherever your clone lives:
+Then point an Action key at it: Script and Choose… in the 3KC window, or by hand in `~/.config/uwu/actions.json`, with the path to wherever your clone lives:
 
 ```json
 [
