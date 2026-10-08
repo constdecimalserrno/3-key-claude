@@ -1,11 +1,41 @@
 // The Helper shell: grabs the keys, asks core.swift what to do, then does it. That's all.
 import AppKit
 import Carbon.HIToolbox
+import ServiceManagement
 
 let actionsFile = NSString(string: "~/.config/uwu/actions.json").expandingTildeInPath
 
 // one fixed prefix, so the log command in guide.md can find us
 func log(_ line: String) { NSLog("uwu: %@", line) }
+
+// `Kuro.app/Contents/MacOS/Kuro --uninstall` only takes us out of the login items, install.sh uninstall does the rest
+if CommandLine.arguments.contains("--uninstall") {
+    do { try SMAppService.mainApp.unregister(); log("out of the login items, bye") }
+    catch { log("couldn't leave the login items: \(error)") }
+    exit(0)
+}
+
+// ONE of us is plenty, two would fight over the keys ( the old UwU Helper counts, it has the same bundle id )
+if NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "").contains(where: { $0.processIdentifier != getpid() }) {
+    log("already running, bye")
+    exit(0)
+}
+
+// start at login, so dragging Kuro into Applications and opening it once is the whole install
+// ponytail: the old LaunchAgent brought us back after a crash, a login item doesn't, the next login or a double-click does
+if SMAppService.mainApp.status != .enabled {
+    do { try SMAppService.mainApp.register(); log("starting at login from now on") }
+    catch { log("couldn't add us to the login items: \(error)") }
+}
+
+// no Actions file yet? copy the defaults that ship inside the app, then they're yours to edit
+if !FileManager.default.fileExists(atPath: actionsFile), let defaults = Bundle.main.path(forResource: "actions", ofType: "json") {
+    do {
+        try FileManager.default.createDirectory(atPath: (actionsFile as NSString).deletingLastPathComponent, withIntermediateDirectories: true)
+        try FileManager.default.copyItem(atPath: defaults, toPath: actionsFile)
+        log("put the default Actions at ~/.config/uwu/actions.json, make them yours!")
+    } catch { log("couldn't put the default Actions at ~/.config/uwu/actions.json: \(error)") }
+}
 
 // what wootility sends for each key, see the key table in guide.md
 let keys: [(code: Int, key: Key)] = [(kVK_F13, .cycle), (kVK_F16, .action(1)), (kVK_F17, .action(2)), (kVK_F18, .action(3))]
@@ -128,7 +158,7 @@ func pressed(_ key: Key) {
     }
 }
 
-// in-process, so the one-time Automation prompt asks about UwU Helper
+// in-process, so the one-time Automation prompt asks about Kuro
 // 2 seconds per Apple event instead of AppleScript's usual 2 minutes, a healthy terminal app answers WAY faster
 // ponytail: runs on the main thread, so a hung terminal app still freezes every key, just for those 2 seconds a press,
 // and the press that pops a one-time Automation prompt gives up before you click Allow, so you press again
@@ -148,7 +178,7 @@ func quoted(_ text: String) -> String {
 
 // ponytail: virtual key 0 plus a Unicode string, so an app that reads raw key codes instead of text sees the A key
 func type(_ text: String) {
-    guard AXIsProcessTrusted() else { return log("can't type without Accessibility, tick UwU Helper in System Settings") }
+    guard AXIsProcessTrusted() else { return log("can't type without Accessibility, tick Kuro in System Settings") }
     let source = CGEventSource(stateID: .privateState)
     for character in text {
         let units = Array(String(character).utf16)
@@ -189,7 +219,7 @@ for (index, entry) in keys.enumerated() {
 }
 
 if !AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary) {
-    log("no Accessibility yet, tick UwU Helper in System Settings so the Action keys can type")
+    log("no Accessibility yet, tick Kuro in System Settings so the Action keys can type")
 }
 log("up and listening")
 NSApplication.shared.run() // LSUIElement in Info.plist keeps us out of the Dock and the menu bar
