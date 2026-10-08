@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>dev.constdecimalserrno.uwu</string>
+	<key>CFBundleName</key>
+	<string>3KC</string>
+	<key>CFBundleDisplayName</key>
+	<string>3-key Claude</string>
+	<key>CFBundleExecutable</key>
+	<string>3KeyClaude</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>The Cycle key asks iterm2 and ghostty for their Sessions and focuses the next one, and some of your Actions ( like the one that starts claude in a new terminal window ) talk to other apps too.</string>
+</dict>
+</plist>

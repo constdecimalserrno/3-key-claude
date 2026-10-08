@@ -1,0 +1,5 @@
+[
+  {"script": "examples/new-claude-session.sh"},
+  {"type": "yes"},
+  {"type": "no"}
+]
