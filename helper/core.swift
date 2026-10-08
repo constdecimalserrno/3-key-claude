@@ -7,14 +7,15 @@ import Foundation
 // the supported terminal apps by bundle id, in Cycle order
 let terminals = ["com.googlecode.iterm2", "com.mitchellh.ghostty"]
 
+// the user-facing names: .cycle is the Hop key, .action the Macro keys ( each runs one script macro, an Action in here )
 enum Key: Equatable, CustomStringConvertible {
     case cycle
     case action(Int) // 1, 2, 3, left to right
 
     var description: String {
         switch self {
-        case .cycle: return "Cycle key"
-        case .action(let n): return "Action key \(n)"
+        case .cycle: return "Hop key"
+        case .action(let n): return "Macro key \(n)"
         }
     }
 }

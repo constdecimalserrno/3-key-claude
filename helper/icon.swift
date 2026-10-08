@@ -9,7 +9,7 @@ let skirt = CGColor(srgbRed: 0.37, green: 0.37, blue: 0.37, alpha: 1) // #5E5E5E
 // everything sits on Apple's 1024 grid, y up from the center
 // the face: its radius and height, then the features from the face's center ( mouthX is where each bowl of the w sits, a bit under its radius so the middle point dips )
 typealias Face = (r: CGFloat, y: CGFloat, eyeX: CGFloat, eyeHalf: CGFloat, eyeTop: CGFloat, eyeBowl: CGFloat, mouthX: CGFloat, mouth: CGFloat, mouthY: CGFloat, line: CGFloat)
-// the three keys ( talk, hop, enter ): one key's size, the gap between them, the row's top edge, the corner radius,
+// the three keys ( talk, hop, confirm ): one key's size, the gap between them, the row's top edge, the corner radius,
 // then how much of the keycap's side and front shows around its top ( 0 for a flat key )
 typealias Keys = (w: CGFloat, h: CGFloat, gap: CGFloat, top: CGFloat, round: CGFloat, rim: CGFloat, lip: CGFloat)
 typealias Look = (face: Face, keys: Keys?)

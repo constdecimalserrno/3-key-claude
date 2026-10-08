@@ -246,7 +246,7 @@ for (index, entry) in keys.enumerated() {
 
 // the Setup window has its own Accessibility step, so macOS's own prompt only shows up once you're past it ( say after an update )
 if !AXIsProcessTrusted() {
-    log("no Accessibility yet, tick 3-key Claude in System Settings so the Action keys can type")
+    log("no Accessibility yet, tick 3-key Claude in System Settings so the Macro keys can type")
     if Setup.shared.done { AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary) }
 }
 log("up and listening")

@@ -5,9 +5,10 @@ import AppKit
 import Carbon.HIToolbox
 import SwiftUI
 
+// actions is the Macro keys page ( in code a Macro key is still an action, see Key in core.swift )
 enum Step: Int, CaseIterable { case welcome, uwu, accessibility, talk, terminals, actions, done }
 
-let shareCode = "8ee6080d758ae0da37a7f8b6c9604399d265"
+let shareCode = "a46ba44bd158495dd0ec9fb415c21197da11" // the 3KC profile in wootility
 let appNames = ["com.googlecode.iterm2": "iterm2", "com.mitchellh.ghostty": "ghostty"]
 
 func openSettings(_ pane: String) { NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:" + pane)!) }
@@ -26,7 +27,7 @@ func dragMeFirst() -> Never {
 final class Setup: NSObject, ObservableObject, NSApplicationDelegate, NSWindowDelegate {
     static let shared = Setup()
     @Published var step = Step.welcome
-    @Published var seen: Set<String> = [] // "Enter key", "Talk key", and Key.description for the keys main.swift grabs
+    @Published var seen: Set<String> = [] // "Confirm key", "Talk key", and Key.description for the keys main.swift grabs
     @Published var trusted = AXIsProcessTrusted()
     @Published var swoosh = true // macOS takes you to the Space with the app's windows
     @Published var asked: [String: String] = [:] // bundle id -> how asking for the Automation yes went
@@ -72,13 +73,13 @@ final class Setup: NSObject, ObservableObject, NSApplicationDelegate, NSWindowDe
 
     func saw(_ check: String) { seen.insert(check) }
 
-    // the Enter key arrives as a plain Return while this window is in front, the Talk key as Right Ctrl from anywhere
+    // the Confirm key arrives as a plain Return while this window is in front, the Talk key as Right Ctrl from anywhere
     // ponytail: any Return or Right Ctrl ticks the box, your laptop's keys too, so it trusts you a little
     private func watch() {
         local = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .flagsChanged]) { [unowned self] event in
             if event.type == .flagsChanged { talk(event); return event }
             guard [kVK_Return, kVK_ANSI_KeypadEnter].contains(Int(event.keyCode)) else { return event }
-            saw("Enter key")
+            saw("Confirm key")
             return nil // swallowed, or macOS beeps at you
         }
         listen()
@@ -113,7 +114,7 @@ final class Setup: NSObject, ObservableObject, NSApplicationDelegate, NSWindowDe
     }
 
     // a harmless Session listing per running terminal app, so macOS pops its one-time Automation prompt NOW,
-    // with a whole minute to click Allow ( the Cycle key only waits 2 seconds, see applescript() in main.swift )
+    // with a whole minute to click Allow ( the Hop key only waits 2 seconds, see applescript() in main.swift )
     func ask() {
         for app in terminals { asked[app] = "asking, click Allow when macOS asks" }
         // ponytail: the listing holds the main thread ( so this window too ) until you answer, the tiny delay lets "asking" show up first
@@ -130,13 +131,12 @@ final class Setup: NSObject, ObservableObject, NSApplicationDelegate, NSWindowDe
         }
     }
 
-    // safari can't talk to the UwU, so a chromium browser if you have one
+    // safari can't talk to the UwU, so chrome if you have it
     func openWootility() {
         let url = URL(string: "https://wootility.io")!
-        let browser = ["com.google.Chrome", "com.microsoft.edgemac", "company.thebrowser.Browser"].lazy
-            .compactMap { NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0) }.first
-        if let browser { NSWorkspace.shared.open([url], withApplicationAt: browser, configuration: NSWorkspace.OpenConfiguration()) }
-        else { NSWorkspace.shared.open(url) }
+        if let chrome = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.google.Chrome") {
+            NSWorkspace.shared.open([url], withApplicationAt: chrome, configuration: NSWorkspace.OpenConfiguration())
+        } else { NSWorkspace.shared.open(url) }
     }
 
     // your editor for .json files, TextEdit if you have none
@@ -175,16 +175,17 @@ struct SetupView: View {
     @ViewBuilder var page: some View {
         switch setup.step {
         case .welcome:
-            heading("talk. hop. enter.")
-            Text("Hi, I'm 3-key Claude ( 3KC for short ). Run your ENTIRE agentic workflow from three keys: the Talk key tells a clanker what to do, the Cycle key hops to the next one, the Enter key approves. The 3 small keys below are bonus Actions.")
+            heading("talk. hop. confirm.")
+            Text("Hi, I'm 3-key Claude ( 3KC for short ). Run your ENTIRE agentic workflow from the three top keys of a [wooting UwU](https://wooting.io/uwu): the Talk key tells an agent what to do, the Hop key hops to the next terminal, the Confirm key approves. The 3 small keys below are Macro keys, each runs a script macro you can make do ANYTHING.")
             Text("I'll walk you through the whole setup right here, the UwU included, with a live check for every key. Plug in your UwU and hit Next, it takes about 5 minutes.")
         case .uwu:
             heading("The UwU")
-            Text("""
-                1. Open wootility in chrome, edge or arc ( safari can't talk to the UwU ).
-                2. My Profiles > Import Profile, paste my share code, Import.
-                3. It lands under inactive profiles, drag it into Onboard profiles, slot 1.
-                """)
+            // one line per step, the buttons right where you need them, and step 4 in bold so it can't hide ( it did, once )
+            HStack {
+                Text("1. Open wootility in chrome ( safari can't talk to the UwU ).")
+                Button("Open wootility") { setup.openWootility() }
+            }
+            Text("2. My Profiles > Import Profile, paste my share code, Import.")
             HStack {
                 Text(shareCode).font(.body.monospaced()).textSelection(.enabled)
                 Button(copied ? "Copied" : "Copy") {
@@ -193,11 +194,12 @@ struct SetupView: View {
                     copied = true
                 }
             }
-            Button("Open wootility") { setup.openWootility() }
-            check("Enter key ( top-right ), press it with this window in front", setup.seen.contains("Enter key"))
+            Text("3. It lands as 3KC under inactive profiles, NOT on your UwU yet.")
+            Text("4. DRAG 3KC onto onboard slot 1. Skip this and the keys do nothing.").bold()
+            check("5. Press the Confirm key ( top-right ) with this window in front", setup.seen.contains("Confirm key"))
         case .accessibility:
             heading("Accessibility")
-            Text("The Action keys type for you, so macOS wants your yes first. Click the button and flip the switch next to 3-key Claude.")
+            Text("The Macro keys type for you, so macOS wants your yes first. Click the button and flip the switch next to 3-key Claude.")
             Text("macOS forgets it after EVERY update, so come back here then. Switch already on but this says off? Remove it with -, then click the button again.")
             Button("Open Accessibility settings") { setup.openAccessibility() }
             check(setup.trusted ? "Accessibility is on" : "Accessibility is off", setup.trusted)
@@ -216,7 +218,7 @@ struct SetupView: View {
             check("Talk key ( top-left ), press it", setup.seen.contains("Talk key"))
         case .terminals:
             heading("Your terminals")
-            Text("The Cycle key hops through every Session in iterm2 and ghostty. macOS asks ONCE per app if I may, so open the ones you use, click Ask, then Allow.")
+            Text("Every press of the Hop key hops to the next terminal, through every Session in iterm2 and ghostty. macOS asks ONCE per app if I may, so open the ones you use, click Ask, then Allow.")
             HStack {
                 Button("Ask iterm2 and ghostty") { setup.ask() }
                 Button("Automation settings") { openSettings("com.apple.preference.security?Privacy_Automation") }
@@ -226,20 +228,20 @@ struct SetupView: View {
             }
             check(setup.swoosh ? "Spaces: macOS follows you there" : "Spaces: off, turn on \"switch to a Space with open windows\"", setup.swoosh)
             Button("Open Desktop & Dock") { openSettings("com.apple.Desktop-Settings.extension") }
-            check("Cycle key ( top-middle ), press it", setup.seen.contains("Cycle key"))
-            Text("While I'm open, the Cycle key and Action keys only tick boxes in here.").foregroundStyle(.secondary)
+            check("Hop key ( top-middle ), press it", setup.seen.contains("Hop key"))
+            Text("While I'm open, the Hop key and Macro keys only tick boxes in here.").foregroundStyle(.secondary)
         case .actions:
-            heading("The Action keys")
-            Text("The 3 small keys each run one Action: a new claude session, typing yes, typing no. Press each one.")
-            check("left ( F16 )", setup.seen.contains("Action key 1"))
-            check("middle ( F17 )", setup.seen.contains("Action key 2"))
-            check("right ( F18 )", setup.seen.contains("Action key 3"))
-            Text("Make them yours later from my menu bar icon, or in `~/.config/uwu/actions.json`. An Action can type text, run a command or run ANY bash or AppleScript file, ready-made ones are in `~/.config/uwu/examples/`.")
-            Button("Open Actions file") { setup.openActions() }
+            heading("The Macro keys")
+            Text("The 3 small keys each run one script macro: a new claude session, typing yes, typing no. Press each one.")
+            check("left ( F16 )", setup.seen.contains("Macro key 1"))
+            check("middle ( F17 )", setup.seen.contains("Macro key 2"))
+            check("right ( F18 )", setup.seen.contains("Macro key 3"))
+            Text("Make them yours later from my menu bar icon, or in `~/.config/uwu/actions.json`. A script macro can type text, run a command or run ANY bash or AppleScript file, ready-made ones are in `~/.config/uwu/examples/`.")
+            Button("Open actions.json") { setup.openActions() }
         case .done:
             heading("All set!")
-            Text("Close me and the keys are yours: talk, hop, enter. I start at login and stay out of your Dock.")
-            Text("I live in your menu bar now, the little UwU face top-right. Click it to change the Action keys or run this setup again. Hide your menu bar icons? Open 3KC from Spotlight instead. Cheers!")
+            Text("Close me and the keys are yours: talk, hop, confirm. I start at login and stay out of your Dock.")
+            Text("I live in your menu bar now, the little UwU face top-right. Click it to change the Macro keys or run this setup again. Hide your menu bar icons? Open 3KC from Spotlight instead. Cheers!")
         }
     }
 
