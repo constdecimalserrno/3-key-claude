@@ -1,5 +1,5 @@
 #!/bin/sh
-# Starts claude code in a new terminal window, in the folder below. Action key 1 runs this one out of the box.
+# Starts claude code in a new terminal window, in the folder below. Macro key 1 runs this one out of the box.
 # iterm2 if you have it, else ghostty, else terminal ( the one every Mac has ).
 
 # the folder claude starts in

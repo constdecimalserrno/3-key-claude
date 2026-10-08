@@ -1,4 +1,4 @@
--- Same as new-claude-session.sh, but as an AppleScript file, so you can see that kind of Action works too:
+-- Same as new-claude-session.sh, but as an AppleScript file, so you can see that kind of script macro works too:
 -- {"script": "examples/new-claude-session.applescript"} and 3KC runs it with osascript.
 -- iterm2 ONLY, AppleScript won't even start when it names an app you don't have, so picking one is the .sh's job.
 

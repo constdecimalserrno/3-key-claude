@@ -2,7 +2,7 @@
 # Builds and installs 3-key Claude, the Helper app. Safe to re-run, updating is git pull + this again.
 #
 #   ./install.sh                 install or update, into ~/Applications
-#   ./install.sh uninstall       remove it ( from ~/Applications AND /Applications ), keep your Actions file
+#   ./install.sh uninstall       remove it ( from ~/Applications AND /Applications ), keep your script macros
 #   ./install.sh build           only build, installs NOTHING
 #   ./install.sh dmg             build 3KeyClaude.dmg to hand around, installs NOTHING
 #   ./install.sh test            run the Helper core tests
@@ -40,7 +40,7 @@ build() {
     rm -rf "$BUILT" "$BUILD/AppIcon.iconset" "$BUILD/chips"
     mkdir -p "$BUILT/Contents/MacOS" "$BUILT/Contents/Resources" "$BUILD/chips"
     cp helper/Info.plist "$BUILT/Contents/"
-    # the default Actions and the example scripts, the app copies them out on first launch
+    # the default script macros ( actions.json ) and the example scripts, the app copies them out on first launch
     cp helper/actions.json "$BUILT/Contents/Resources/"
     cp -R examples "$BUILT/Contents/Resources/"
     # the app icon, drawn fresh from vectors on every build ( Info.plist points CFBundleIconFile at AppIcon )
@@ -119,7 +119,7 @@ install)
     rm -rf "$APP"
     ditto "$BUILT" "$APP"
     reset_grants || say "couldn't reset the old permission grants ( fine on a first install ), if $NAME is already under Accessibility, remove it with the - button first"
-    [ -e "$ACTIONS" ] || say "the app puts the default Actions file and the example scripts in ~/.config/uwu/, make them yours!"
+    [ -e "$ACTIONS" ] || say "the app puts the default script macros ( actions.json ) and the example scripts in ~/.config/uwu/, make them yours!"
     open "$APP" # the first launch adds it to the login items
     say "$SHORT is running, and it starts at login from now on"
     if [ -e "$DMG_APP" ]; then say "heads up, there's another copy in /Applications ( from the .dmg? ), drag one of the two to the Trash"; fi
@@ -137,7 +137,7 @@ uninstall)
     if [ -e "$DMG_APP" ]; then rm -rf "$DMG_APP" || say "couldn't remove $DMG_APP, drag it to the Trash yourself"; fi
     reset_grants || true
     defaults delete "$ID" >/dev/null 2>&1 || true # so a comeback gets the Setup window again
-    say "$SHORT is gone, your Actions file and the examples are still in ~/.config/uwu/ in case you come back"
+    say "$SHORT is gone, your script macros and the examples are still in ~/.config/uwu/ in case you come back"
     ;;
 build)
     build
@@ -154,7 +154,7 @@ release)
     command -v gh >/dev/null 2>&1 || { say "release needs gh, the GitHub CLI ( maintainer only, nobody else needs it )"; exit 1; }
     dmg
     # tags the commit you built from, so push it first
-    gh release create "$TAG" "$DMG" --target "$(git rev-parse HEAD)" --title "$NAME $TAG" --notes "talk. hop. enter.
+    gh release create "$TAG" "$DMG" --target "$(git rev-parse HEAD)" --title "$NAME $TAG" --notes "talk. hop. confirm.
 
 Download 3KeyClaude.dmg, drag the app into Applications and open it from there. macOS blocks it the first time because it isn't notarized, so go to System Settings > Privacy & Security, scroll ALL the way down, click Open Anyway and confirm. Once, never again. The Setup window does the rest.
 

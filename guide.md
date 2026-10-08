@@ -1,21 +1,21 @@
 # 3-key Claude guide
 
-Everything you need to take an UwU and a Mac from zero to the three-key workflow: talk. hop. enter.
+Everything you need to take an UwU and a Mac from zero to the three-key workflow: talk. hop. confirm.
 
 ## The fast path
 
 1. Download [3KeyClaude.dmg](https://github.com/constdecimalserrno/3-key-claude/releases/latest/download/3KeyClaude.dmg) ( Apple silicon or Intel, macOS 13 or newer ), open it and drag 3-key Claude onto the Applications folder next to it.
 2. Open 3-key Claude from your Applications folder. macOS blocks it the first time, because it isn't notarized, so close that box, open System Settings > Privacy & Security, scroll ALL the way down, click Open Anyway next to 3-key Claude and confirm. Once, never again.
 3. Follow the Setup window. One page per step, with a live check for every key:
-   1. The UwU: copy the share code, open wootility, import it, press the Enter key.
+   1. The UwU: open wootility, import the share code, DRAG the 3KC profile onto onboard slot 1, press the Confirm key.
    2. Accessibility: flip the switch, the check goes green by itself.
    3. The Talk key: add it to wispr flow, press it.
-   4. Your terminals: click Ask so macOS asks about iterm2 and ghostty NOW, check the Spaces setting, press the Cycle key.
-   5. The Action keys: press all three.
+   4. Your terminals: click Ask so macOS asks about iterm2 and ghostty NOW, check the Spaces setting, press the Hop key.
+   5. The Macro keys: press all three.
 
 Good to know:
 
-- While the Setup window is open, the Cycle key and the Action keys ONLY tick their boxes. Close it and they're real.
+- While the Setup window is open, the Hop key and the Macro keys ONLY tick their boxes. Close it and they're real.
 - Closing it on the last page marks setup done. Close it earlier and it comes back at your next login.
 - From then on 3KC lives in your menu bar as a little UwU face ( [more below](#the-menu-bar-icon-and-the-3kc-window) ). Want the Setup window back? Click the face > Run setup.
 - Opened it straight from the `.dmg`? It tells you to drag it into Applications first and quits, nothing gets set up from in there.
@@ -31,23 +31,23 @@ Out of the box the UwU types Z / X / C on top and Esc / Space / Fn below. Here's
 | Key | wootility sends | What it does |
 |---|---|---|
 | Talk key ( top-left ) | Right Ctrl | push-to-talk for your dictation app, hold to talk, double-tap for hands-free |
-| Cycle key ( top-middle ) | F13 | moves keyboard focus to the next Session, needs 3KC ( part 2 ) |
-| Enter key ( top-right ) | Return | a plain Return to whatever has focus |
-| Action keys ( bottom, left to right ) | F16 / F17 / F18 | one Action each, needs 3KC ( part 2 ) |
+| Hop key ( top-middle ) | F13 | hops keyboard focus to the next Session, needs 3KC ( part 2 ) |
+| Confirm key ( top-right ) | Return | a plain Return to whatever has focus |
+| Macro keys ( bottom, left to right ) | F16 / F17 / F18 | one script macro each, needs 3KC ( part 2 ) |
 
 Good to know:
 
 - The 3 top keys only fire at about 2.0mm with Rapid Trigger OFF, so resting a finger on them does nothing. No accidental Enter, no dictation cut short.
-- It's all ONE profile in the UwU's first onboard slot ( P1 ), stored on the UwU itself, so it works without wootility open and on any Mac you plug it into.
+- It's all ONE profile, called 3KC, in the UwU's first onboard slot ( P1 ), stored on the UwU itself, so it works without wootility open and on any Mac you plug it into.
 - F14 and F15 are skipped on purpose, macOS may treat them as display brightness.
 - The bottom-right button is normally wootility's Fn key, so remapping it gives up the Fn layers. Fair trade.
 
 ### Import the share code
 
-1. Plug in the UwU and open [wootility](https://wootility.io) in chrome, edge or arc. It's a web app, and safari can't talk to the UwU.
-2. Go to My Profiles > Import Profile, paste this share code and click Import: `8ee6080d758ae0da37a7f8b6c9604399d265`
-3. The profile now lives in wootility, under your inactive profiles, not on the UwU yet. Drag it into the Onboard profiles section, first slot.
-4. Open any text editor and press the Enter key, you get a new line. The other keys seem to do nothing yet, that's right, keep going.
+1. Plug in the UwU and open [wootility](https://wootility.io) in chrome. It's a web app, and safari can't talk to the UwU.
+2. Go to My Profiles > Import Profile, paste this share code and click Import: `a46ba44bd158495dd0ec9fb415c21197da11`
+3. The profile, called 3KC, now lives in wootility under your inactive profiles, NOT on the UwU yet. DRAG it onto onboard slot 1. Skip this and the keys do nothing.
+4. Open any text editor and press the Confirm key, you get a new line. The other keys seem to do nothing yet, that's right, keep going.
 
 There's no one-click import link, GitHub strips the custom link scheme wootility uses, so copy-paste it is.
 
@@ -73,13 +73,13 @@ wispr flow won't take Right Ctrl on its own? Use Right Option instead, in BOTH p
 
 The Talk key does nothing in iterm2? wispr flow's shortcuts are blocked while iterm2's Secure Keyboard Entry is on, switch it off in the iTerm2 menu.
 
-That's the Talk key and the Enter key done, with nothing installed on the Mac. The Cycle key and the Action keys send keys macOS ignores out of the box, so they stay quiet until part 2.
+That's the Talk key and the Confirm key done, with nothing installed on the Mac. The Hop key and the Macro keys send keys macOS ignores out of the box, so they stay quiet until part 2.
 
 ## Part 2: 3-key Claude, the Helper
 
-3-key Claude ( 3KC for short ) is a tiny app that sits in the background, listens for the Cycle key and the Action keys, and does the thing. It uses only Apple's own frameworks ( no homebrew, no third-party code, no xcode project ), it has no Dock icon ( just a small UwU face in your menu bar ), it never touches the network, and all of it lives in `helper/`, small enough to read over one coffee. Please do, you're about to give it Accessibility.
+3-key Claude ( 3KC for short ) is a tiny app that sits in the background, listens for the Hop key and the Macro keys, and does the thing. It uses only Apple's own frameworks ( no homebrew, no third-party code, no xcode project ), it has no Dock icon ( just a small UwU face in your menu bar ), it never touches the network, and all of it lives in `helper/`, small enough to read over one coffee. Please do, you're about to give it Accessibility.
 
-The Talk key and the Enter key work without it, so if that's all you want, you're done.
+The Talk key and the Confirm key work without it, so if that's all you want, you're done.
 
 ### Install
 
@@ -125,7 +125,7 @@ Once setup is done, the little UwU face in your menu bar is all you see of 3KC. 
 - Configure keys opens the 3KC window ( below ).
 - Run setup brings the Setup window back, from the top.
 - Open scripts folder opens `~/.config/uwu/scripts/` ( made for you if it isn't there yet ), a handy spot for your own scripts.
-- Open Actions file opens `~/.config/uwu/actions.json` in your editor.
+- Open actions.json opens `~/.config/uwu/actions.json`, your script macros, in your editor.
 - Quit 3KC quits it until your next login, or until you open it again.
 
 Hide your menu bar icons, or the notch ate this one? Open 3KC again from Spotlight ( type "3KC" ), Finder or Launchpad. It's running anyway, so you just get the 3KC window.
@@ -133,14 +133,14 @@ Hide your menu bar icons, or the notch ate this one? Open 3KC again from Spotlig
 The 3KC window has:
 
 - The top three keys, read-only, with what each one sends. They live on the UwU itself, so the window just links you to wootility.
-- One row per Action key, left to right: pick Type, Run or Script, then fill in the text, the command or the file ( Choose… starts in the scripts folder ). Test runs that row right now, saved or not. Testing a Type Action gives you 3 seconds to click where it should type, and types NOTHING if you stay in the window.
+- One row per Macro key, left to right: pick Type, Run or Script, then fill in the text, the command or the file ( Choose… starts in the scripts folder ). Test runs that row right now, saved or not. Testing a Type macro gives you 3 seconds to click where it should type, and types NOTHING if you stay in the window.
 - Save writes `~/.config/uwu/actions.json`, the keys use it on the very next press. NOTHING gets written until you click Save, and the window re-reads the file every time it opens, so hand edits win. Edited the file by hand while the window was open? Save says so and leaves your edit alone.
 - An entry the window doesn't understand shows up as "As is" and stays exactly as it was. A file that isn't a JSON list at all, it doesn't touch until you fix it by hand.
 - Buttons for your folders, the Accessibility status with a button to its settings, and Run setup again.
 
-### Cycle key
+### Hop key
 
-Every press of the Cycle key ( wootility sends F13 ) moves keyboard focus to the next Session, so you press it and just start typing there. A Session is one running terminal in iterm2 or ghostty, and every split pane counts as its own Session.
+Every press of the Hop key ( wootility sends F13 ) hops keyboard focus to the next Session, so you press it and just start typing there. A Session is one running terminal in iterm2 or ghostty, and every split pane counts as its own Session.
 
 The Cycle goes through iterm2 first, then ghostty, window by window, then tab by tab, then pane by pane, and after the last Session it wraps back to the first. That order is FIXED, it doesn't reshuffle as focus moves, so 5 presses visit 5 different Sessions and your fingers learn the way. Muscle memory.
 
@@ -149,7 +149,7 @@ Good to know:
 - Minimized windows and iterm2's hotkey window are skipped, so the Cycle never pops a window you put away ( ghostty is a bit different, see below ).
 - In any other app ( say your browser ), the first press takes you back to the terminal app you were in last, and from there it cycles as usual.
 - No Sessions open, or no terminal app even running? Then it does nothing. 3KC NEVER launches iterm2 or ghostty just to ask what's open.
-- The Cycle key doesn't need Accessibility, only the Automation yes below ( one per terminal app ).
+- The Hop key doesn't need Accessibility, only the Automation yes below ( one per terminal app ).
 
 Sessions on other Spaces and in full-screen windows are in the Cycle too, but macOS only takes you over there with this one switched on ( the Setup window shows whether it is ):
 
@@ -167,7 +167,7 @@ macOS also wants to know, once per terminal app, if 3KC may control it ( that's 
 
 ### ghostty
 
-Got ghostty? Its Sessions join the Cycle right after iterm2's, so one Cycle key walks through both apps and wraps around. Only one of the two running is fine too.
+Got ghostty? Its Sessions join the Cycle right after iterm2's, so one Hop key hops through both apps and wraps around. Only one of the two running is fine too.
 
 1. You need ghostty 1.3 or newer, that's the first one that speaks AppleScript ( Ghostty > About Ghostty tells you ).
 2. macOS asks if 3KC may control ghostty, the same one-time Automation prompt as for iterm2. Click Allow ( then press again, if it was a Cycle press that asked ).
@@ -179,21 +179,23 @@ Got ghostty? Its Sessions join the Cycle right after iterm2's, so one Cycle key 
 
 Good to know: ghostty's quick terminal is never in the Cycle, but a minimized ghostty window IS, because ghostty doesn't tell scripts which windows are minimized, so the Cycle pops it right back up. Sorry. Also, ghostty still calls its AppleScript a preview, so a future ghostty might break this ( like everything here, this will all likely change in 3-6 months ).
 
-### Action keys
+### Macro keys
 
-The three small bottom keys each do one Action, left to right:
+The three small bottom keys each run one script macro, left to right:
 
-| Action key | wootility sends | Default Action |
+| Macro key | wootility sends | Default script macro |
 |---|---|---|
 | left | F16 | starts claude code in your home folder, in a new iterm2, ghostty or terminal window |
 | middle | F17 | types `yes` |
 | right | F18 | types `no` |
 
-Typing NEVER presses Return at the end, that's the Enter key's job, so nothing gets sent until you say so. It also ignores any modifier you're holding, so `yes` never shows up as ctrl-y-e-s just because your thumb is still on the Talk key.
+Typing NEVER presses Return at the end, that's the Confirm key's job, so nothing gets sent until you say so. It also ignores any modifier you're holding, so `yes` never shows up as ctrl-y-e-s just because your thumb is still on the Talk key.
 
-### Make the Actions yours
+<a id="make-the-actions-yours"></a>
 
-The 3KC window does all of this for you, no JSON needed. Under the hood, the Actions live in `~/.config/uwu/actions.json` ( 3KC puts the defaults there on first launch, the menu bar icon's Open Actions file opens it ), a list of three entries, one per Action key, left to right. Each entry is one of three kinds:
+### Make the script macros yours
+
+The 3KC window does all of this for you, no JSON needed. Under the hood, your script macros live in `~/.config/uwu/actions.json` ( 3KC puts the defaults there on first launch, the menu bar icon's Open actions.json opens it ), a list of three entries, one per Macro key, left to right. Each entry is one of three kinds:
 
 - `{"type": "..."}` types some text.
 - `{"run": "..."}` runs a shell command, through `/bin/sh -c`.
@@ -207,29 +209,29 @@ The 3KC window does all of this for you, no JSON needed. Under the hood, the Act
 
 | Script | What it does | Change at the top |
 |---|---|---|
-| `new-claude-session.sh` | starts claude code in a new terminal window, iterm2 if you have it, else ghostty, else terminal. Action key 1 runs it out of the box | `FOLDER`, `TERMINAL` |
+| `new-claude-session.sh` | starts claude code in a new terminal window, iterm2 if you have it, else ghostty, else terminal. Macro key 1 runs it out of the box | `FOLDER`, `TERMINAL` |
 | `new-claude-session.applescript` | the same, as an AppleScript file, iterm2 only ( AppleScript won't even start when it names an app you don't have, so the `.sh` does the picking ) | `theFolder` |
 | `scratch-claude.sh` | makes a fresh, dated folder like `~/scratch/2026-10-07-153012` and starts claude code in it, through `new-claude-session.sh` | `SCRATCH` |
 | `open-project.sh` | opens a folder in an app, say your project in your editor, finder by default | `FOLDER`, `APP` |
 
-The first time a script talks to iterm2, ghostty or terminal, macOS asks if 3KC may control it, click Allow ( the same one-time Automation prompt as for the Cycle key ). Updates NEVER overwrite your copies, so for fresh ones, delete `~/.config/uwu/examples/` and restart 3KC with `pkill -x 3KeyClaude; open -a "3-key Claude"`, or copy them over from the clone.
+The first time a script talks to iterm2, ghostty or terminal, macOS asks if 3KC may control it, click Allow ( the same one-time Automation prompt as for the Hop key ). Updates NEVER overwrite your copies, so for fresh ones, delete `~/.config/uwu/examples/` and restart 3KC with `pkill -x 3KeyClaude; open -a "3-key Claude"`, or copy them over from the clone.
 
 Just like the old computer magazines, here is how you can add your own! Put a script in `~/.config/uwu/scripts/` ( the 3KC window's Choose… starts there ), in the clone's `scripts/` folder ( git ignores everything in there ) or anywhere else you like, say `scripts/standup.sh`:
 
 ```sh
 #!/bin/sh
-# my morning: the notes, the issues, and a clanker ready to go in the repo
+# my morning: the notes, the issues, and Claude ready to go in the repo
 open -a Notes
 open https://github.com/constdecimalserrno/3-key-claude/issues
 exec /bin/sh ~/.config/uwu/examples/new-claude-session.sh ~/code/3-key-claude
 ```
 
-Then point an Action key at it: Script and Choose… in the 3KC window, or by hand in `~/.config/uwu/actions.json`, with the path to wherever your clone lives:
+Then point a Macro key at it: Script and Choose… in the 3KC window, or by hand in `~/.config/uwu/actions.json`, with the path to wherever your clone lives:
 
 ```json
 [
   {"script": "~/code/3-key-claude/scripts/standup.sh"},
-  {"type": "dear clanker, run the tests before you tell me it works"},
+  {"type": "dear Claude, run the tests before you tell me it works"},
   {"run": "say uwu"}
 ]
 ```
@@ -271,7 +273,7 @@ Got the clone? One command, for a `.dmg` install in `/Applications` and a source
 ./install.sh uninstall
 ```
 
-That takes 3KC out of your login items, quits it, removes the app, forgets its permissions and settings, and leaves `~/.config/uwu/` ( your Actions file and the examples ) alone, in case you come back. Delete that by hand if you want it gone too.
+That takes 3KC out of your login items, quits it, removes the app, forgets its permissions and settings, and leaves `~/.config/uwu/` ( your script macros and the examples ) alone, in case you come back. Delete that by hand if you want it gone too.
 
 Installed from the `.dmg` and no clone around? Same thing by hand:
 
@@ -283,7 +285,7 @@ tccutil reset All dev.constdecimalserrno.uwu
 defaults delete dev.constdecimalserrno.uwu
 ```
 
-The first line takes it out of your login items, then it quits, goes, and forgets its permissions and its settings. Your Actions file and the examples stay.
+The first line takes it out of your login items, then it quits, goes, and forgets its permissions and its settings. Your script macros and the examples stay.
 
 ### Run the tests
 
@@ -293,4 +295,4 @@ The first line takes it out of your login items, then it quits, goes, and forget
 ./install.sh test
 ```
 
-It prints every case and exits non-zero when anything fails, so you, me and the clankers all get the same answer.
+It prints every case and exits non-zero when anything fails, so you, me and the agents all get the same answer.
