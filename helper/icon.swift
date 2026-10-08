@@ -1,4 +1,4 @@
-// Three-Button Workflow's app icon: a black squircle, a gray UwU face and the pad's three keys under it, drawn from vectors at every size.
+// 3-key Claude's app icon: a black squircle, a gray UwU face and the pad's three keys under it, drawn from vectors at every size.
 // usage: swift helper/icon.swift <out-dir> [logo.png]  ( writes <out-dir>/AppIcon.iconset, plus a 512px logo if given a path )
 import AppKit
 
