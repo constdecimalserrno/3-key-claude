@@ -1,1 +1,4 @@
 .DS_Store
+# your own scripts, everything in scripts/ but its README stays on your Mac
+scripts/*
+!scripts/README.md
