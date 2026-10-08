@@ -2,10 +2,13 @@
 # Starts claude code in a new terminal window, in the folder below. Action key 1 runs this one out of the box.
 # iterm2 if you have it, else ghostty, else terminal ( the one every Mac has ).
 
-# the folder claude starts in, your home folder unless you hand me another one ( scratch-claude.sh does )
-FOLDER="${1:-$HOME}"
+# the folder claude starts in
+FOLDER="$HOME"
 # "iterm2", "ghostty" or "terminal", or "" for the first one you have, in that order
 TERMINAL=""
+
+# a folder handed to me wins ( scratch-claude.sh does that )
+if [ -n "${1:-}" ]; then FOLDER="$1"; fi
 
 # ponytail: only looks in the two Applications folders, an app anywhere else needs TERMINAL set by hand
 has() { [ -d "/Applications/$1.app" ] || [ -d "$HOME/Applications/$1.app" ]; }
