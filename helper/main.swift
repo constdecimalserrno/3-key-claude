@@ -1,4 +1,4 @@
-// The Helper shell: grabs the keys, asks core.swift what to do, then does it. That's all.
+// The Helper shell: grabs the keys, asks core.swift what to do, then does it. That's all ( setup.swift has the Setup window ).
 import AppKit
 import Carbon.HIToolbox
 import ServiceManagement
@@ -8,12 +8,17 @@ let actionsFile = NSString(string: "~/.config/uwu/actions.json").expandingTildeI
 // one fixed prefix, so the log command in guide.md can find us
 func log(_ line: String) { NSLog("uwu: %@", line) }
 
-// `Kuro.app/Contents/MacOS/Kuro --uninstall` only takes us out of the login items, install.sh uninstall does the rest
+// `3-key Claude.app/Contents/MacOS/3KeyClaude --uninstall` only takes us out of the login items,
+// install.sh uninstall does the rest
 if CommandLine.arguments.contains("--uninstall") {
     do { try SMAppService.mainApp.unregister(); log("out of the login items, bye") }
     catch { log("couldn't leave the login items: \(error)") }
     exit(0)
 }
+
+// still inside the mounted .dmg, or Gatekeeper runs a temporary copy of us: NO login item and NO Actions file from there
+// ponytail: an Applications folder on an external disk lives under /Volumes too, so that gets the same telling-off
+if Bundle.main.bundlePath.hasPrefix("/Volumes/") || Bundle.main.bundlePath.contains("/AppTranslocation/") { dragMeFirst() }
 
 // ONE of us is plenty, two would fight over the keys ( the old UwU Helper counts, it has the same bundle id )
 if NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "").contains(where: { $0.processIdentifier != getpid() }) {
@@ -21,7 +26,7 @@ if NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bu
     exit(0)
 }
 
-// start at login, so dragging Kuro into Applications and opening it once is the whole install
+// start at login, so dragging us into Applications and opening us once is the whole install
 // ponytail: the old LaunchAgent brought us back after a crash, a login item doesn't, the next login or a double-click does
 if SMAppService.mainApp.status != .enabled {
     do { try SMAppService.mainApp.register(); log("starting at login from now on") }
@@ -127,6 +132,8 @@ NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didActiva
 }
 
 func pressed(_ key: Key) {
+    // the Setup window is open, so the key only ticks its box in there, no cycling, no typing
+    if Setup.shared.isOpen { return Setup.shared.saw(key.description) }
     var world = World()
     if key == .cycle {
         world.frontmost = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
@@ -158,14 +165,14 @@ func pressed(_ key: Key) {
     }
 }
 
-// in-process, so the one-time Automation prompt asks about Kuro
+// in-process, so the one-time Automation prompt asks about 3-key Claude
 // 2 seconds per Apple event instead of AppleScript's usual 2 minutes, a healthy terminal app answers WAY faster
 // ponytail: runs on the main thread, so a hung terminal app still freezes every key, just for those 2 seconds a press,
-// and the press that pops a one-time Automation prompt gives up before you click Allow, so you press again
+// and the press that pops a one-time Automation prompt gives up before you click Allow ( the Setup window asks with a minute )
 @discardableResult
-func applescript(_ source: String) -> String? {
+func applescript(_ source: String, timeout: Int = 2) -> String? {
     var error: NSDictionary?
-    guard let script = NSAppleScript(source: "with timeout of 2 seconds\n\(source)\nend timeout") else { return nil }
+    guard let script = NSAppleScript(source: "with timeout of \(timeout) seconds\n\(source)\nend timeout") else { return nil }
     let result = script.executeAndReturnError(&error)
     if let error { log("AppleScript failed: \(error[NSAppleScript.errorMessage] ?? error)"); return nil }
     return result.stringValue
@@ -178,7 +185,7 @@ func quoted(_ text: String) -> String {
 
 // ponytail: virtual key 0 plus a Unicode string, so an app that reads raw key codes instead of text sees the A key
 func type(_ text: String) {
-    guard AXIsProcessTrusted() else { return log("can't type without Accessibility, tick Kuro in System Settings") }
+    guard AXIsProcessTrusted() else { return log("can't type without Accessibility, tick 3-key Claude in System Settings") }
     let source = CGEventSource(stateID: .privateState)
     for character in text {
         let units = Array(String(character).utf16)
@@ -218,8 +225,11 @@ for (index, entry) in keys.enumerated() {
     }
 }
 
-if !AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary) {
-    log("no Accessibility yet, tick Kuro in System Settings so the Action keys can type")
+// the Setup window has its own Accessibility step, so macOS's own prompt only shows up once you're past it ( say after an update )
+if !AXIsProcessTrusted() {
+    log("no Accessibility yet, tick 3-key Claude in System Settings so the Action keys can type")
+    if Setup.shared.done { AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary) }
 }
 log("up and listening")
+NSApplication.shared.delegate = Setup.shared // opens the Setup window on first launch, and whenever you open us again
 NSApplication.shared.run() // LSUIElement in Info.plist keeps us out of the Dock and the menu bar

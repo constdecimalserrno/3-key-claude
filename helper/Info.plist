@@ -5,11 +5,11 @@
 	<key>CFBundleIdentifier</key>
 	<string>dev.constdecimalserrno.uwu</string>
 	<key>CFBundleName</key>
-	<string>Kuro</string>
+	<string>3KC</string>
 	<key>CFBundleDisplayName</key>
-	<string>Kuro</string>
+	<string>3-key Claude</string>
 	<key>CFBundleExecutable</key>
-	<string>Kuro</string>
+	<string>3KeyClaude</string>
 	<key>CFBundleIconFile</key>
 	<string>AppIcon</string>
 	<key>CFBundlePackageType</key>
