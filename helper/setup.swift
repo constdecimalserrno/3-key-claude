@@ -192,7 +192,7 @@ struct SetupView: View {
         case .accessibility:
             heading("Accessibility")
             Text("The Action keys type for you, so macOS wants your yes first. Click the button and flip the switch next to 3-key Claude.")
-            Text("macOS forgets it after EVERY update, so come back and flip it again ( already on and still red here? off and on again ).")
+            Text("macOS forgets it after EVERY update, so come back here then. Switch already on but this says off? Remove it with -, then click the button again.")
             Button("Open Accessibility settings") { setup.openAccessibility() }
             check(setup.trusted ? "Accessibility is on" : "Accessibility is off", setup.trusted)
         case .talk:
