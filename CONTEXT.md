@@ -49,5 +49,5 @@ _Avoid_: onboarding, wizard, welcome screen
 ### Actions
 
 **Action**:
-The one thing an Action key does: type a piece of text, or run something ( like opening a terminal ).
-_Avoid_: macro, snippet, script, shortcut
+The one thing an Action key does: type a piece of text, run a shell command, or run a script file ( any bash or AppleScript file, like the ready-made examples ).
+_Avoid_: macro, snippet, shortcut

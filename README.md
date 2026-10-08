@@ -16,7 +16,7 @@ _( GIF of the Cycle key coming soon, I still have to record it )_
 
 ## Get it
 
-1. Download [3KeyClaude.dmg](https://github.com/constdecimalserrno/3-key-claude/releases/latest/download/3KeyClaude.dmg) ( Apple silicon, macOS 13 or newer ).
+1. Download [3KeyClaude.dmg](https://github.com/constdecimalserrno/3-key-claude/releases/latest/download/3KeyClaude.dmg) ( Apple silicon or Intel, macOS 13 or newer ).
 2. Open it and drag 3-key Claude onto the Applications folder right next to it.
 3. Open 3-key Claude from your Applications folder. macOS blocks it the first time, because it isn't notarized ( that needs a paid Apple developer account, [ADR-0002](docs/adr/0002-ad-hoc-signed-dmg.md) has the story ). Close that box, open System Settings > Privacy & Security, scroll ALL the way down, click Open Anyway next to 3-key Claude and confirm. Once, never again.
 4. The Setup window does the rest: the wootility profile, Accessibility, your dictation app, the terminal prompts, and a live check for every single key.
@@ -25,7 +25,7 @@ That's it. 3KC starts at login, has no Dock or menu bar icon, never touches the 
 
 ### Or build it yourself
 
-Not keen on handing Accessibility to an app you downloaded? Fair, I wouldn't either. Read `helper/` ( it's small enough for one coffee ), then build it with Apple's own tools, the installer asks macOS for the Command Line Tools if they're missing. This is also the way on an Intel Mac.
+Not keen on handing Accessibility to an app you downloaded? Fair, I wouldn't either. Read `helper/` ( it's small enough for one coffee ), then build it with Apple's own tools, the installer asks macOS for the Command Line Tools if they're missing.
 
 ```sh
 git clone https://github.com/constdecimalserrno/3-key-claude.git
@@ -42,9 +42,32 @@ That builds it, puts it in `~/Applications`, opens it, and the same Setup window
 | Talk key ( top-left ) | Right Ctrl | push-to-talk for your dictation app, hold to talk, double-tap for hands-free |
 | Cycle key ( top-middle ) | F13 | moves keyboard focus to the next terminal Session, across iterm2 and ghostty |
 | Enter key ( top-right ) | Return | a plain Return, so nothing gets sent until YOU say so |
-| Action keys ( bottom, left to right ) | F16 / F17 / F18 | one Action each, by default a new iterm2 window, typing `yes` and typing `no` |
+| Action keys ( bottom, left to right ) | F16 / F17 / F18 | one Action each, by default a new claude code session, typing `yes` and typing `no` |
 
 The Talk key and the Enter key need NO app, the mapping lives on the UwU itself, so if that's all you want, part 1 of [guide.md](guide.md) is your whole setup. The Cycle key and the Action keys need 3KC.
+
+## Make the Action keys yours
+
+Each Action key does one of three things: type some text, run a shell command, or run ANY bash or AppleScript file, so one key can open your project, set up a fresh folder or start claude code wherever you like. A few ready-made scripts live in [examples/](examples/), and 3KC copies them to `~/.config/uwu/examples/` on first launch:
+
+- `new-claude-session.sh` starts claude code in a new terminal window, iterm2 if you have it, else ghostty, else terminal ( Action key 1 runs this one out of the box )
+- `new-claude-session.applescript` does the same in iterm2, as an AppleScript file
+- `scratch-claude.sh` makes a fresh, dated scratch folder and starts claude code in it
+- `open-project.sh` opens a folder in your editor, or in finder
+
+The folder and the terminal or app sit right at the top of each one, change them and you're done.
+
+Just like the old computer magazines, here is how you can add your own!
+
+```json
+[
+  {"script": "examples/scratch-claude.sh"},
+  {"script": "~/code/3-key-claude/scripts/standup.sh"},
+  {"type": "yes"}
+]
+```
+
+That's `~/.config/uwu/actions.json`, one entry per key, left to right. Relative paths start in `~/.config/uwu/`, and your own scripts can live anywhere, the clone's `scripts/` folder is gitignored for exactly that. Scripts run with 3KC's permissions ( Accessibility included ), so only run scripts you've read. [guide.md](guide.md) has the rest.
 
 ## The rest
 

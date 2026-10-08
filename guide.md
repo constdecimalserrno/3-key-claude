@@ -4,7 +4,7 @@ Everything you need to take an UwU and a Mac from zero to the three-key workflow
 
 ## The fast path
 
-1. Download [3KeyClaude.dmg](https://github.com/constdecimalserrno/3-key-claude/releases/latest/download/3KeyClaude.dmg) ( Apple silicon, macOS 13 or newer ), open it and drag 3-key Claude onto the Applications folder next to it.
+1. Download [3KeyClaude.dmg](https://github.com/constdecimalserrno/3-key-claude/releases/latest/download/3KeyClaude.dmg) ( Apple silicon or Intel, macOS 13 or newer ), open it and drag 3-key Claude onto the Applications folder next to it.
 2. Open 3-key Claude from your Applications folder. macOS blocks it the first time, because it isn't notarized, so close that box, open System Settings > Privacy & Security, scroll ALL the way down, click Open Anyway next to 3-key Claude and confirm. Once, never again.
 3. Follow the Setup window. One page per step, with a live check for every key:
    1. The UwU: copy the share code, open wootility, import it, press the Enter key.
@@ -85,9 +85,9 @@ The Talk key and the Enter key work without it, so if that's all you want, you'r
 
 Two ways, both end in the same Setup window.
 
-The `.dmg` ( Apple silicon ): the fast path at the top. It's ad-hoc signed, NOT notarized ( that needs a paid Apple developer account, see [ADR-0002](docs/adr/0002-ad-hoc-signed-dmg.md) ), so the first open needs that one-time Open Anyway in System Settings > Privacy & Security. Updating is downloading the new `.dmg` and dragging it over the old one.
+The `.dmg` ( Apple silicon and Intel ): the fast path at the top. It's ad-hoc signed, NOT notarized ( that needs a paid Apple developer account, see [ADR-0002](docs/adr/0002-ad-hoc-signed-dmg.md) ), so the first open needs that one-time Open Anyway in System Settings > Privacy & Security. Updating is downloading the new `.dmg` and dragging it over the old one.
 
-From source ( any Mac, Intel too ):
+From source:
 
 1. Clone the repo and run the installer from inside it ( never pipe an installer straight from the internet, read it first, this one is short ):
 
@@ -165,7 +165,7 @@ The three small bottom keys each do one Action, left to right:
 
 | Action key | wootility sends | Default Action |
 |---|---|---|
-| left | F16 | opens a new iterm2 window and brings it to the front |
+| left | F16 | starts claude code in your home folder, in a new iterm2, ghostty or terminal window |
 | middle | F17 | types `yes` |
 | right | F18 | types `no` |
 
@@ -173,23 +173,54 @@ Typing NEVER presses Return at the end, that's the Enter key's job, so nothing g
 
 ### Make the Actions yours
 
-The Actions live in `~/.config/uwu/actions.json` ( 3KC puts the defaults there on first launch, and the Setup window has an Open Actions file button ), a list of three entries, one per Action key, left to right. Each entry is either `{"type": "..."}` to type some text, or `{"run": "..."}` to run a shell command ( through `/bin/sh -c`, fire-and-forget ). 3KC re-reads the file on EVERY press, so save, press, done. No reinstall, no re-grant.
+The Actions live in `~/.config/uwu/actions.json` ( 3KC puts the defaults there on first launch, and the Setup window has an Open Actions file button ), a list of three entries, one per Action key, left to right. Each entry is one of three kinds:
 
-Just like the old computer magazines, here is how you can add your own!
+- `{"type": "..."}` types some text.
+- `{"run": "..."}` runs a shell command, through `/bin/sh -c`.
+- `{"script": "..."}` runs ANY bash or AppleScript file. The path can be absolute, start with `~/`, or be relative to `~/.config/uwu/`. `.applescript` and `.scpt` files run with `osascript`, a file you made executable runs as is ( give it a `#!` line ), anything else runs with `/bin/sh`.
+
+`run` and `script` are fire-and-forget, 3KC starts them and moves on. It re-reads the file on EVERY press, so save, press, done. No reinstall, no re-grant.
+
+### The example scripts
+
+3KC copies these from the repo's `examples/` to `~/.config/uwu/examples/` on first launch, and from then on they're yours. Each one has what you'd want to change as a variable at the top:
+
+| Script | What it does | Change at the top |
+|---|---|---|
+| `new-claude-session.sh` | starts claude code in a new terminal window, iterm2 if you have it, else ghostty, else terminal. Action key 1 runs it out of the box | `FOLDER`, `TERMINAL` |
+| `new-claude-session.applescript` | the same, as an AppleScript file, iterm2 only ( AppleScript won't even start when it names an app you don't have, so the `.sh` does the picking ) | `theFolder` |
+| `scratch-claude.sh` | makes a fresh, dated folder like `~/scratch/2026-10-07-153012` and starts claude code in it, through `new-claude-session.sh` | `SCRATCH` |
+| `open-project.sh` | opens a folder in an app, say your project in your editor, finder by default | `FOLDER`, `APP` |
+
+The first time a script talks to iterm2, ghostty or terminal, macOS asks if 3KC may control it, click Allow ( the same one-time Automation prompt as for the Cycle key ). Updates NEVER overwrite your copies, so for fresh ones, delete `~/.config/uwu/examples/` and restart 3KC with `pkill -x 3KeyClaude; open -a "3-key Claude"`, or copy them over from the clone.
+
+Just like the old computer magazines, here is how you can add your own! Put a script in the clone's `scripts/` folder ( git ignores everything in there ) or anywhere else you like, say `scripts/standup.sh`:
+
+```sh
+#!/bin/sh
+# my morning: the notes, the issues, and a clanker ready to go in the repo
+open -a Notes
+open https://github.com/constdecimalserrno/3-key-claude/issues
+exec /bin/sh ~/.config/uwu/examples/new-claude-session.sh ~/code/3-key-claude
+```
+
+Then point an Action key at it in `~/.config/uwu/actions.json`, with the path to wherever your clone lives:
 
 ```json
 [
-  {"run": "open https://wooting.io/uwu"},
+  {"script": "~/code/3-key-claude/scripts/standup.sh"},
   {"type": "dear clanker, run the tests before you tell me it works"},
   {"run": "say uwu"}
 ]
 ```
 
+Scripts run with 3KC's permissions, Accessibility included, so only run scripts you've read.
+
 Good to know:
 
-- Commands get the tiny PATH that launchd hands out ( `/usr/bin:/bin:/usr/sbin:/sbin` ), so anything you installed yourself needs its full path.
+- Commands and scripts get the tiny PATH that launchd hands out ( `/usr/bin:/bin:/usr/sbin:/sbin` ), so anything you installed yourself needs its full path. The claude examples are fine, `claude` runs inside your terminal's own shell, with your PATH.
 - A `"` inside your text is `\"` and a `\` is `\\`, that's just JSON. Editing in TextEdit? Turn off Edit > Substitutions > Smart Quotes first, curly quotes break JSON.
-- A missing file, a typo or a missing entry makes that key do nothing and log why, it NEVER takes 3KC down.
+- A missing file, a typo, a missing entry or a script that isn't there makes that key do nothing and log why, it NEVER takes 3KC down.
 - Want the defaults back? From the clone:
 
   ```sh
@@ -204,7 +235,7 @@ When a key does nothing, 3KC says why. Leave this running, press the key and wat
 /usr/bin/log stream --style compact --predicate 'eventMessage BEGINSWITH "uwu:"'
 ```
 
-Yes, the full path, zsh has its own built-in `log` that just says "too many arguments". Ctrl-C stops it, and `show --last 1h` instead of `stream` looks back instead of waiting. Commands you run show up in there, typed text never does ( just how many characters ).
+Yes, the full path, zsh has its own built-in `log` that just says "too many arguments". Ctrl-C stops it, and `show --last 1h` instead of `stream` looks back instead of waiting. Commands and scripts you run show up in there, typed text never does ( just how many characters ).
 
 Granted Accessibility and typing still does nothing? Kick it:
 
@@ -220,7 +251,7 @@ Got the clone? One command, for a `.dmg` install in `/Applications` and a source
 ./install.sh uninstall
 ```
 
-That takes 3KC out of your login items, quits it, removes the app, forgets its permissions and settings, and leaves `~/.config/uwu/actions.json` alone, in case you come back. Delete that by hand if you want it gone too.
+That takes 3KC out of your login items, quits it, removes the app, forgets its permissions and settings, and leaves `~/.config/uwu/` ( your Actions file and the examples ) alone, in case you come back. Delete that by hand if you want it gone too.
 
 Installed from the `.dmg` and no clone around? Same thing by hand:
 
@@ -232,7 +263,7 @@ tccutil reset All dev.constdecimalserrno.uwu
 defaults delete dev.constdecimalserrno.uwu
 ```
 
-The first line takes it out of your login items, then it quits, goes, and forgets its permissions and its settings. Your Actions file stays.
+The first line takes it out of your login items, then it quits, goes, and forgets its permissions and its settings. Your Actions file and the examples stay.
 
 ### Run the tests
 
