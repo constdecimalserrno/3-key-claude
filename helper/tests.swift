@@ -6,10 +6,10 @@ import Foundation
 enum Tests {
     static var failed = 0
 
-    static func expect(_ name: String, _ got: Effect, _ want: Effect) {
+    static func expect<T: Equatable>(_ name: String, _ got: T, _ want: T) {
         var ok = got == want
         // for "nothing", any reason will do as long as it's one line for the log
-        if case .nothing(let why) = got, case .nothing = want { ok = !why.isEmpty && !why.contains("\n") }
+        if case .nothing(let why)? = got as? Effect, case .nothing? = want as? Effect { ok = !why.isEmpty && !why.contains("\n") }
         if !ok { failed += 1 }
         print(ok ? "ok    \(name)" : "FAIL  \(name): got \(got), want \(want)")
     }
@@ -96,6 +96,69 @@ enum Tests {
         expect("only one entry, Action 3 does nothing", decide(.action(3), one), nothing)
         expect("empty list", decide(.action(1), World(actions: "[]")), nothing)
         expect("Action 0 does nothing", decide(.action(0), defaults), nothing)
+
+        // the 3KC window: the Actions file in, entries out, and back, NEVER mangling a quote
+        func type(_ text: String) -> Entry { Entry(kind: .type, text: text) }
+        func run(_ command: String) -> Entry { Entry(kind: .run, text: command) }
+        func odd(_ json: String) -> Entry { Entry(kind: .odd, text: json) }
+        let blank = type("")
+        let shipped = try? String(contentsOfFile: CommandLine.arguments[1], encoding: .utf8)
+        expect("the shipped Actions file comes back byte for byte", entries(shipped).map(json), shipped)
+
+        // three run Actions with quoted paths and $HOME inside, the shape a real Actions file has
+        let quoted = #"""
+            [
+              {"run": "\"$HOME/code/3-key-claude/scripts/one.sh\""},
+              {"run": "\"$HOME/code/3-key-claude/scripts/two.sh\""},
+              {"run": "\"$HOME/code/3-key-claude/scripts/three.sh\""}
+            ]
+
+            """#
+        expect("quoted run paths load as you typed them", entries(quoted),
+               [run(#""$HOME/code/3-key-claude/scripts/one.sh""#), run(#""$HOME/code/3-key-claude/scripts/two.sh""#),
+                run(#""$HOME/code/3-key-claude/scripts/three.sh""#)])
+        expect("quoted run paths come back byte for byte", entries(quoted).map(json), quoted)
+        expect("quoted run paths still run the same after a save", decide(.action(3), World(actions: entries(quoted).map(json))),
+               .run(#""$HOME/code/3-key-claude/scripts/three.sh""#))
+
+        // every kind, with the characters JSON has to escape
+        let kinds = [type("ünïcödé \"quotes\" back\\slash\ttab\nnew line"), run(#"say "uwu" && echo 'hi' | tr a-z A-Z"#),
+                     Entry(kind: .script, text: "~/code/my scripts/x.applescript")]
+        expect("type, run and script round trip", entries(json(kinds)), kinds)
+        let saved = World(actions: json(kinds), folder: "/h/.config/uwu", home: "/h", file: { _ in .plain })
+        expect("a saved type types exactly that", decide(.action(1), saved), .type(kinds[0].text))
+        expect("a saved run runs exactly that", decide(.action(2), saved), .run(kinds[1].text))
+        expect("a saved script finds its file", decide(.action(3), saved), .script(runner: "/usr/bin/osascript", path: "/h/code/my scripts/x.applescript"))
+        expect("pretty, one entry per line, slashes left alone", json([type("a/b"), run("ls"), Entry(kind: .script, text: "x.sh")]),
+               "[\n  {\"type\": \"a/b\"},\n  {\"run\": \"ls\"},\n  {\"script\": \"x.sh\"}\n]\n")
+
+        // odd entries stay exactly what they mean now, and still do nothing
+        let odds = #"[{"say": "hi"}, {"type": "a", "run": "b"}, null, {"odd": "x"}, {"type": 1}, "yes", {"script": ["a.sh"]}]"#
+        let oddEntries = [odd(#"{"say":"hi"}"#), odd(#"{"run":"b","type":"a"}"#), odd("null"), odd(#"{"odd":"x"}"#),
+                          odd(#"{"type":1}"#), odd(#""yes""#), odd(#"{"script":["a.sh"]}"#)]
+        expect("odd entries load as odd", entries(odds), oddEntries)
+        expect("odd entries survive a save", entries(entries(odds).map(json)), oddEntries)
+        for n in 1...3 { expect("odd entry \(n) still does nothing after a save", decide(.action(n), World(actions: json(oddEntries))), nothing) }
+
+        // short, long, missing and broken files
+        expect("one entry, the other keys type nothing", entries(#"[{"type": "yes"}]"#), [type("yes"), blank, blank])
+        expect("empty list, three blank keys", entries("[]"), [blank, blank, blank])
+        expect("a fourth entry comes along", entries(#"[{"type": "1"}, {"type": "2"}, {"type": "3"}, {"run": "4"}]"#),
+               [type("1"), type("2"), type("3"), run("4")])
+        expect("no file, three blank keys", entries(nil), [blank, blank, blank])
+        for (name, text) in [("empty file", ""), ("not JSON", "yes please"), ("missing bracket", #"[{"type": "yes"}"#), ("an object", #"{"type": "yes"}"#)] {
+            expect("broken file, hands off: \(name)", entries(text), nil)
+        }
+
+        // a file you pick with Choose..., written so script() finds it again
+        let picked = World(folder: "/h/.config/uwu", home: "/h", file: { _ in .executable })
+        for (path, short) in [("/h/.config/uwu/scripts/a.sh", "scripts/a.sh"), ("/h/code/b.sh", "~/code/b.sh"), ("/opt/c.sh", "/opt/c.sh"),
+                              ("/h/.config/uwu-old/d.sh", "~/.config/uwu-old/d.sh")] {
+            expect("picked \(path) is \(short)", shorten(path, picked), short)
+            var world = picked
+            world.actions = json([Entry(kind: .script, text: shorten(path, picked))])
+            expect("picked \(path) runs from there", decide(.action(1), world), .script(runner: nil, path: path))
+        }
 
         // the Cycle
         let iterm = "com.googlecode.iterm2", safari = "com.apple.Safari"

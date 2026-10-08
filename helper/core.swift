@@ -1,4 +1,5 @@
 // The Helper core: which key fired + a snapshot of the world in, exactly ONE effect out.
+// Plus the Actions file both ways ( text to entries and back ) for the 3KC window.
 // Pure on purpose ( no files, no clocks, no AppKit ), so tests.swift can poke it without a Mac full of windows.
 // The one peek at the disk it needs ( is that script there, is it executable ) comes in through World.file, tests hand it a fake one.
 import Foundation
@@ -54,14 +55,60 @@ func decide(_ key: Key, _ world: World) -> Effect {
         guard list.indices.contains(n - 1) else {
             return .nothing("actions.json has no entry \(n)")
         }
-        // exactly one key, so {"type": "a", "run": "b"} can't quietly pick one
-        if let entry = list[n - 1] as? [String: String], entry.count == 1 {
-            if let text = entry["type"] { return .type(text) }
-            if let command = entry["run"] { return .run(command) }
-            if let path = entry["script"] { return script(path, world) }
+        let item = entry(list[n - 1])
+        switch item.kind {
+        case .type: return .type(item.text)
+        case .run: return .run(item.text)
+        case .script: return script(item.text, world)
+        case .odd: return .nothing(#"entry \#(n) in actions.json must be {"type": "..."}, {"run": "..."} or {"script": "..."}"#)
         }
-        return .nothing(#"entry \#(n) in actions.json must be {"type": "..."}, {"run": "..."} or {"script": "..."}"#)
     }
+}
+
+// one entry of the Actions file, the way decide() reads it and the 3KC window ( menubar.swift ) edits it
+// odd is anything else ( say {"say": "hi"} or null ): text holds its JSON, so saving puts it back as it was
+struct Entry: Equatable {
+    enum Kind: String { case type, run, script, odd }
+    var kind: Kind
+    var text: String
+}
+
+// exactly one key, so {"type": "a", "run": "b"} can't quietly pick one
+func entry(_ any: Any) -> Entry {
+    if let pair = any as? [String: String], pair.count == 1, let only = pair.first,
+       let kind = Entry.Kind(rawValue: only.key), kind != .odd {
+        return Entry(kind: kind, text: only.value)
+    }
+    return Entry(kind: .odd, text: compact(any))
+}
+
+// the whole Actions file for the 3KC window: one entry per Action key at least ( a missing one becomes type nothing,
+// which does nothing, same as before ), extra entries come along so saving keeps them.
+// nil when it isn't a JSON list, the window leaves THAT file alone until you fix it by hand
+func entries(_ text: String?) -> [Entry]? {
+    let blank = Entry(kind: .type, text: "")
+    guard let text else { return [blank, blank, blank] } // no file yet, saving makes one
+    guard let list = (try? JSONSerialization.jsonObject(with: Data(text.utf8))) as? [Any] else { return nil }
+    return list.map(entry) + Array(repeating: blank, count: max(0, 3 - list.count))
+}
+
+// and back again: one entry per line, in key order, written the same way every time, so your Actions file stays diffable
+func json(_ entries: [Entry]) -> String {
+    let lines = entries.map { $0.kind == .odd ? $0.text : "{\(compact($0.kind.rawValue)): \(compact($0.text))}" }
+    return "[\n  " + lines.joined(separator: ",\n  ") + "\n]\n"
+}
+
+// one line of JSON: " and \\ escaped, / and ü left alone, keys sorted so an odd entry never reshuffles
+func compact(_ any: Any) -> String {
+    (try? JSONSerialization.data(withJSONObject: any, options: [.fragmentsAllowed, .sortedKeys, .withoutEscapingSlashes]))
+        .flatMap { String(data: $0, encoding: .utf8) } ?? "null"
+}
+
+// a file you picked, written the shortest way script() still finds it: from the Actions folder, from ~/, or the whole path
+func shorten(_ path: String, _ world: World) -> String {
+    if !world.folder.isEmpty, path.hasPrefix(world.folder + "/") { return String(path.dropFirst(world.folder.count + 1)) }
+    if !world.home.isEmpty, path.hasPrefix(world.home + "/") { return "~" + path.dropFirst(world.home.count) }
+    return path
 }
 
 // a script Action: absolute, from your home folder ( ~/ ), or from the folder holding the Actions file
