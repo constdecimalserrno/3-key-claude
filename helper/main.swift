@@ -1,4 +1,4 @@
-// The Helper shell: grabs the keys, asks core.swift what to do, then does it. That's all ( setup.swift has the Setup window ).
+// The Helper shell: grabs the keys, asks core.swift what to do, then does it. That's all ( setup.swift has the Setup window, menubar.swift the rest you can see ).
 import AppKit
 import Carbon.HIToolbox
 import ServiceManagement
@@ -138,27 +138,30 @@ NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didActiva
 func pressed(_ key: Key) {
     // the Setup window is open, so the key only ticks its box in there, no cycling, no typing
     if Setup.shared.isOpen { return Setup.shared.saw(key.description) }
+    // re-read on EVERY press, so edits apply right away
+    if key != .cycle { return act(decide(key, actionWorld(try? String(contentsOfFile: actionsFile, encoding: .utf8))), key) }
     var world = World()
-    if key == .cycle {
-        world.frontmost = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
-        world.lastTerminal = lastTerminal
-        // ONLY ask apps that already run, AppleScript would happily launch the others
-        // ponytail: an app that quits right between this check and the AppleScript gets launched again
-        for app in terminals where !NSRunningApplication.runningApplications(withBundleIdentifier: app).isEmpty {
-            world.listings[app] = applescript(scripts[app]!.list)
-        }
-    } else {
-        // re-read on EVERY press, so edits apply right away
-        world.actions = try? String(contentsOfFile: actionsFile, encoding: .utf8)
-        world.folder = uwuFolder
-        world.home = NSHomeDirectory()
-        world.file = { path in
-            var folder: ObjCBool = false // a folder is no script, so it counts as missing
-            guard FileManager.default.fileExists(atPath: path, isDirectory: &folder), !folder.boolValue else { return .missing }
-            return FileManager.default.isExecutableFile(atPath: path) ? .executable : .plain
-        }
+    world.frontmost = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+    world.lastTerminal = lastTerminal
+    // ONLY ask apps that already run, AppleScript would happily launch the others
+    // ponytail: an app that quits right between this check and the AppleScript gets launched again
+    for app in terminals where !NSRunningApplication.runningApplications(withBundleIdentifier: app).isEmpty {
+        world.listings[app] = applescript(scripts[app]!.list)
     }
-    switch decide(key, world) {
+    act(decide(key, world), key)
+}
+
+// what an Action key needs to know: the Actions file text ( the real one, or the 3KC window's unsaved one for Test ) and a peek at the disk
+func actionWorld(_ actions: String?) -> World {
+    World(actions: actions, folder: uwuFolder, home: NSHomeDirectory()) { path in
+        var folder: ObjCBool = false // a folder is no script, so it counts as missing
+        guard FileManager.default.fileExists(atPath: path, isDirectory: &folder), !folder.boolValue else { return .missing }
+        return FileManager.default.isExecutableFile(atPath: path) ? .executable : .plain
+    }
+}
+
+func act(_ effect: Effect, _ key: Key) {
+    switch effect {
     case .type(let text):
         log("\(key): typing \(text.count) characters") // never the text itself, it might be private
         type(text)
@@ -247,5 +250,5 @@ if !AXIsProcessTrusted() {
     if Setup.shared.done { AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary) }
 }
 log("up and listening")
-NSApplication.shared.delegate = Setup.shared // opens the Setup window on first launch, and whenever you open us again
-NSApplication.shared.run() // LSUIElement in Info.plist keeps us out of the Dock and the menu bar
+NSApplication.shared.delegate = Setup.shared // puts up the menu bar icon, and the Setup window on first launch
+NSApplication.shared.run() // LSUIElement in Info.plist keeps us out of the Dock, the menu bar icon is all you see ( menubar.swift )

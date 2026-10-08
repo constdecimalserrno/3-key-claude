@@ -1,5 +1,5 @@
 // The Setup window: walks you through the WHOLE setup once ( the UwU too ), with a live check for every key.
-// It opens on first launch and whenever you open 3-key Claude while it's already running.
+// It opens on first launch ( until you finish it ), and again from the menu bar icon's Run setup ( menubar.swift ).
 // SwiftUI in a plain NSWindow, so no App, no scenes, no Xcode.
 import AppKit
 import Carbon.HIToolbox
@@ -35,9 +35,15 @@ final class Setup: NSObject, ObservableObject, NSApplicationDelegate, NSWindowDe
     private var window: NSWindow?
     private var local: Any?, global: Any?, timer: Timer?
 
-    func applicationDidFinishLaunching(_ note: Notification) { if !done { show() } }
-    // opened from Finder, Launchpad or Spotlight while already running
-    func applicationShouldHandleReopen(_ app: NSApplication, hasVisibleWindows: Bool) -> Bool { show(); return false }
+    func applicationDidFinishLaunching(_ note: Notification) {
+        MenuBar.shared.menuBar()
+        if !done { show() }
+    }
+    // opened from Finder, Launchpad or Spotlight while already running: the 3KC window, or this one if you never finished it
+    func applicationShouldHandleReopen(_ app: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        if done { MenuBar.shared.show() } else { show() }
+        return false
+    }
 
     func show() {
         if window == nil {
@@ -228,12 +234,12 @@ struct SetupView: View {
             check("left ( F16 )", setup.seen.contains("Action key 1"))
             check("middle ( F17 )", setup.seen.contains("Action key 2"))
             check("right ( F18 )", setup.seen.contains("Action key 3"))
-            Text("Make them yours in `~/.config/uwu/actions.json`, I re-read it on EVERY press. An Action can type text, run a command or run ANY bash or AppleScript file, ready-made ones are in `~/.config/uwu/examples/`.")
+            Text("Make them yours later from my menu bar icon, or in `~/.config/uwu/actions.json`. An Action can type text, run a command or run ANY bash or AppleScript file, ready-made ones are in `~/.config/uwu/examples/`.")
             Button("Open Actions file") { setup.openActions() }
         case .done:
             heading("All set!")
-            Text("Close me and the keys are yours: talk, hop, enter. I start at login and stay out of your Dock and menu bar.")
-            Text("Want this window back? Just open 3-key Claude again. Cheers!")
+            Text("Close me and the keys are yours: talk, hop, enter. I start at login and stay out of your Dock.")
+            Text("I live in your menu bar now, the little UwU face top-right. Click it to change the Action keys or run this setup again. Hide your menu bar icons? Open 3KC from Spotlight instead. Cheers!")
         }
     }
 

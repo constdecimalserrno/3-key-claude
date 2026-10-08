@@ -49,7 +49,7 @@ build() {
     # one compile per chip, then lipo glues them into one app that runs on both
     for chip in ${1:-$(uname -m)}; do
         swiftc -O -swift-version 5 -target "$chip-apple-macos13.0" \
-            helper/core.swift helper/setup.swift helper/main.swift -o "$BUILD/chips/$chip"
+            helper/core.swift helper/setup.swift helper/menubar.swift helper/main.swift -o "$BUILD/chips/$chip"
     done
     lipo -create "$BUILD/chips/"* -output "$BUILT/Contents/MacOS/$EXE"
     xattr -cr "$BUILT" # same story for attributes copied over from the clone
