@@ -4,7 +4,7 @@ import Carbon.HIToolbox
 
 let actionsFile = NSString(string: "~/.config/uwu/actions.json").expandingTildeInPath
 
-// one fixed prefix, so `log stream` in guide.md can find us
+// one fixed prefix, so the log command in guide.md can find us
 func log(_ line: String) { NSLog("uwu: %@", line) }
 
 // what wootility sends for each key, see the key table in guide.md

@@ -177,10 +177,10 @@ Good to know:
 When a key does nothing, the Helper says why. Leave this running, press the key and watch:
 
 ```sh
-log stream --style compact --predicate 'eventMessage BEGINSWITH "uwu:"'
+/usr/bin/log stream --style compact --predicate 'eventMessage BEGINSWITH "uwu:"'
 ```
 
-Ctrl-C stops it, and `log show --last 1h` instead of `log stream` looks back instead of waiting. Commands you run show up in there, typed text never does ( just how many characters ).
+Yes, the full path, zsh has its own built-in `log` that just says "too many arguments". Ctrl-C stops it, and `show --last 1h` instead of `stream` looks back instead of waiting. Commands you run show up in there, typed text never does ( just how many characters ).
 
 Granted Accessibility and typing still does nothing? Kick the Helper:
 
