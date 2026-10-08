@@ -33,27 +33,34 @@ need_tools() {
     fi
 }
 
+# $1: the chips to build for, THIS Mac's by default ( the .dmg asks for both )
 build() {
     need_tools
     say "building $SHORT ( takes a few seconds )"
-    rm -rf "$BUILT" "$BUILD/AppIcon.iconset"
-    mkdir -p "$BUILT/Contents/MacOS" "$BUILT/Contents/Resources"
+    rm -rf "$BUILT" "$BUILD/AppIcon.iconset" "$BUILD/chips"
+    mkdir -p "$BUILT/Contents/MacOS" "$BUILT/Contents/Resources" "$BUILD/chips"
     cp helper/Info.plist "$BUILT/Contents/"
-    cp helper/actions.json "$BUILT/Contents/Resources/" # the default Actions, the app copies them out on first launch
+    # the default Actions and the example scripts, the app copies them out on first launch
+    cp helper/actions.json "$BUILT/Contents/Resources/"
+    cp -R examples "$BUILT/Contents/Resources/"
     # the app icon, drawn fresh from vectors on every build ( Info.plist points CFBundleIconFile at AppIcon )
     swift helper/icon.swift "$BUILD" >/dev/null
     iconutil -c icns "$BUILD/AppIcon.iconset" -o "$BUILT/Contents/Resources/AppIcon.icns"
-    swiftc -O -swift-version 5 -target "$(uname -m)-apple-macos13.0" \
-        helper/core.swift helper/setup.swift helper/main.swift -o "$BUILT/Contents/MacOS/$EXE"
+    # one compile per chip, then lipo glues them into one app that runs on both
+    for chip in ${1:-$(uname -m)}; do
+        swiftc -O -swift-version 5 -target "$chip-apple-macos13.0" \
+            helper/core.swift helper/setup.swift helper/main.swift -o "$BUILD/chips/$chip"
+    done
+    lipo -create "$BUILD/chips/"* -output "$BUILT/Contents/MacOS/$EXE"
     xattr -cr "$BUILT" # same story for attributes copied over from the clone
     # ponytail: ad-hoc means a brand new identity on EVERY build, so macOS forgets the Accessibility grant each time
     codesign --force --sign - "$BUILT"
 }
 
 # the .dmg: the app, a shortcut to /Applications to drag it onto, and a read-me for the one-time Open Anyway
-# ponytail: built for THIS Mac's chip only ( arm64 on Apple silicon ), Intel Macs build from source
+# universal, so Apple silicon AND Intel Macs can use the same download
 dmg() {
-    build
+    build "arm64 x86_64"
     rm -rf "$BUILD/dmg" "$DMG"
     mkdir -p "$BUILD/dmg"
     ditto "$BUILT" "$BUILD/dmg/$NAME.app"
@@ -112,7 +119,7 @@ install)
     rm -rf "$APP"
     ditto "$BUILT" "$APP"
     reset_grants || say "couldn't reset the old permission grants ( fine on a first install ), if $NAME is already under Accessibility, remove it with the - button first"
-    [ -e "$ACTIONS" ] || say "the app puts the default Actions file at ~/.config/uwu/actions.json, make it yours!"
+    [ -e "$ACTIONS" ] || say "the app puts the default Actions file and the example scripts in ~/.config/uwu/, make them yours!"
     open "$APP" # the first launch adds it to the login items
     say "$SHORT is running, and it starts at login from now on"
     if [ -e "$DMG_APP" ]; then say "heads up, there's another copy in /Applications ( from the .dmg? ), drag one of the two to the Trash"; fi
@@ -130,7 +137,7 @@ uninstall)
     if [ -e "$DMG_APP" ]; then rm -rf "$DMG_APP" || say "couldn't remove $DMG_APP, drag it to the Trash yourself"; fi
     reset_grants || true
     defaults delete "$ID" >/dev/null 2>&1 || true # so a comeback gets the Setup window again
-    say "$SHORT is gone, your Actions file is still at ~/.config/uwu/actions.json in case you come back"
+    say "$SHORT is gone, your Actions file and the examples are still in ~/.config/uwu/ in case you come back"
     ;;
 build)
     build
@@ -151,7 +158,7 @@ release)
 
 Download 3KeyClaude.dmg, drag the app into Applications and open it from there. macOS blocks it the first time because it isn't notarized, so go to System Settings > Privacy & Security, scroll ALL the way down, click Open Anyway and confirm. Once, never again. The Setup window does the rest.
 
-Apple silicon only, on an Intel Mac build it from source, the README says how. Cheers!"
+Runs on Apple silicon and Intel, macOS 13 or newer. Cheers!"
     ;;
 test)
     need_tools
