@@ -52,41 +52,48 @@ let keys: [(code: Int, key: Key)] = [(kVK_F13, .cycle), (kVK_F16, .action(1)), (
 // each supported terminal app's AppleScript by bundle id ( core.swift has the Cycle order ):
 // list prints its Sessions in the listing format core.swift reads, focus moves keyboard focus to one Session
 let scripts: [String: (list: String, focus: (String) -> String)] = [
-    // `tab` is an iterm2 class in here, hence character id 9, and «property Indx» is the tab's index ( plain `index` errors )
+    // `tab` is an iterm2 class in here, hence character id 9
+    // every Apple event to iterm2 costs ~10ms, so ask for each property of ALL windows/tabs/sessions in one go
+    // ( nested lists: sids is windows > tabs > sessions ) and loop locally, a loop of `id of s` took 0.6s+ a press
+    // the tab index is its spot in the list, same order as «property Indx»
     "com.googlecode.iterm2": (list: """
         set sep to character id 9
         tell application id "com.googlecode.iterm2"
-            set out to ""
-            repeat with w in windows
-                set flags to ""
-                if miniaturized of w then set flags to "minimized"
-                if is hotkey window of w then set flags to flags & " dropdown"
-                set wid to id of w
-                repeat with t in tabs of w
-                    set ti to «property Indx» of t
-                    set pane to 0
-                    repeat with s in sessions of t
-                        set pane to pane + 1
-                        set out to out & "session" & sep & wid & sep & ti & sep & pane & sep & (id of s) & sep & flags & linefeed
-                    end repeat
+            set wids to id of windows
+            set mins to miniaturized of windows
+            set hots to is hotkey window of windows
+            set sids to id of sessions of tabs of windows
+            set cur to ""
+            try
+                set cur to "current" & sep & (id of current session of current window) & linefeed
+            end try
+        end tell
+        set out to ""
+        repeat with w from 1 to count wids
+            set flags to ""
+            if item w of mins then set flags to "minimized"
+            if item w of hots then set flags to flags & " dropdown"
+            repeat with t from 1 to count item w of sids
+                repeat with p from 1 to count item t of item w of sids
+                    set out to out & "session" & sep & (item w of wids) & sep & t & sep & p & sep & (item p of item t of item w of sids) & sep & flags & linefeed
                 end repeat
             end repeat
-            try
-                set out to out & "current" & sep & (id of current session of current window) & linefeed
-            end try
-            return out
-        end tell
+        end repeat
+        return out & cur
         """,
-        // select the Session, its tab AND its window, then activate, iterm2 needs every single one of those
+        // same trick to find it, then select the Session, its tab AND its window, then activate, iterm2 needs every single one of those
         focus: { id in """
         tell application id "com.googlecode.iterm2"
-            repeat with w in (get windows)
-                repeat with t in (get tabs of w)
-                    repeat with s in (get sessions of t)
-                        if id of s is \(quoted(id)) then
-                            select s
-                            select t
-                            select w
+            set wids to id of windows
+            set sids to id of sessions of tabs of windows
+            repeat with w from 1 to count wids
+                repeat with t from 1 to count item w of sids
+                    repeat with p from 1 to count item t of item w of sids
+                        if item p of item t of item w of sids is \(quoted(id)) then
+                            set win to window id (item w of wids)
+                            select session p of tab t of win
+                            select tab t of win
+                            select win
                             activate
                             return
                         end if
